@@ -103,7 +103,7 @@
       </a>
     </div>
     <h1>Aardbevingen NL</h1>
-    <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen live bij het KNMI, rijksmonumenten live bij RCE linked data.</div>
+    <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen rechtstreeks van het KNMI, rijksmonumenten via linked data van de RCE.</div>
 
     <div class="panel">
       <h2>Zoek op plaats</h2>
@@ -138,7 +138,7 @@
     <footer>
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
-      Kaart: Leaflet + CARTO. Beide bronnen worden live bevraagd, geen ingebakken snapshot.
+      Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.
     </footer>
   </div>
   <div id="mapPane">
@@ -335,8 +335,10 @@
       var ymd = f[0], time = f[1];
       var lat = parseFloat(f[f.length - 5]);
       var lon = parseFloat(f[f.length - 4]);
-      var depth = parseFloat(f[f.length - 3]);
-      var mag = parseFloat(f[f.length - 2]);
+      var depthValue = parseFloat(f[f.length - 3]);
+      var magValue = parseFloat(f[f.length - 2]);
+      var depth = Number.isFinite(depthValue) ? depthValue : null;
+      var mag = Number.isFinite(magValue) ? magValue : null;
       var place = f.slice(2, f.length - 5).join(",");
       var iso = ymd.length === 8
         ? ymd.slice(0, 4) + "-" + ymd.slice(4, 6) + "-" + ymd.slice(6, 8) + "T" + time + "Z"
@@ -351,7 +353,7 @@
   var AARD_ARCHEOLOGISCH_URI = "https://data.cultureelerfgoed.nl/term/id/rn/2/b673c8c1-5d93-496d-8f9e-89133d579d77";
   var INSTANTIES_GRAPH = "https://linkeddata.cultureelerfgoed.nl/graph/instanties-rce";
   var GEBOUWD_LIMIT = 400;
-  // Archeologische rijksmonumenten zijn landelijk maar ~1.500 -- geen
+  // Archeologische rijksmonumenten (o.a. scheepswrakken) zijn landelijk maar ~1.500 -- geen
   // praktische cap nodig. Apart bevraagd, want anders verdwijnen ze structureel uit de top-400
   // van de veel dichtere "onroerend gebouwd"-categorie (bevestigd: bij Anna Paulowna liggen 792
   // gebouwde monumenten dichterbij dan het scheepswrak "aanloop Molengat", dat daardoor nooit in
@@ -628,14 +630,29 @@
 
   function initPlaceSearch() {
     var input = $("placeSearch");
+    function newestEvent(events) {
+      return events.slice().sort(function (a, b) {
+        return new Date(b.date) - new Date(a.date);
+      })[0] || null;
+    }
+
     function trySelect() {
       var q = input.value.trim().toLowerCase();
       if (!q) return;
-      var match = state.events.filter(function (ev) { return ev.place && ev.place.toLowerCase() === q; })[0];
-      if (!match) {
-        match = state.events.filter(function (ev) { return ev.place && ev.place.toLowerCase().indexOf(q) === 0; })[0];
+
+      var matches = state.events.filter(function (ev) {
+        return ev.place && ev.place.toLowerCase() === q;
+      });
+
+      if (!matches.length) {
+        matches = state.events.filter(function (ev) {
+          return ev.place && ev.place.toLowerCase().indexOf(q) === 0;
+        });
       }
+
+      var match = newestEvent(matches);
       if (!match) return;
+
       resetTimeFilter(); // zoekresultaat moet altijd zichtbaar zijn, ongeacht animatiepositie
       map.setView([match.lat, match.lon], 12);
       selectEpicenter(match.lat, match.lon, match.mag, match.depth, match.place);
@@ -670,7 +687,7 @@
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten effectgebied</div>' +
       '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - onroerend gebouwd</div>' +
       '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - archeologisch</div>' +
-      '<div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km - trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>' +
+      '<div class="hint">De indicatie is gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km. De gebruikte trillingssnelheid is 2 mm/s. De indicatie is alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte. Bij diepe of tektonische bevingen is dit een ruwe extrapolatie en geen schadebeoordeling.</div>' +
       '</div>';
   }
 
