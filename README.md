@@ -3,8 +3,26 @@
 Interactieve kaart van Nederlandse aardbevingen met een straal-selectie die laat zien welke
 rijksmonumenten binnen die straal liggen, inclusief een indicatieve "impactscore" per monument.
 
-Standalone HTML-bestand (`aardbevingen_kaart.html`), geen build-stap, geen servercode,
-geen API-key nodig. Bedoelde repository: `github.com/jolietjakeblues/aardbevingen-en-rijksmonumenten`
+Standalone HTML-bestand, geen build-stap, geen servercode, geen API-key nodig.
+Repository: `github.com/jolietjakeblues/aardbevingen-en-rijksmonumenten`
+
+**Live:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
+(GitHub Pages, geverifieerd bereikbaar — HTTP 200). Let op: dit toont de laatst *gepushte*
+commit; lokale wijzigingen die nog niet gecommit/gepusht zijn (zoals de v0.16.0-toevoegingen op
+het moment van schrijven) staan er nog niet op.
+
+## Bestandsstructuur
+
+- **`docs/index.html`** — de actuele, canonieke versie. Dit is ook het bestand dat GitHub Pages
+  serveert zodra Pages is ingesteld op de map `docs/` (standaardconventie: geen aparte
+  build-/deploy-stap nodig).
+- `aardbevingen_en_rijksmonumenten_v0.16.0.html` — momentopname van dezelfde inhoud onder een
+  versienummer, voor wie een specifieke release wil terugvinden zonder door de git-historie te
+  hoeven zoeken.
+
+Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
+`docs/index.html` er een volledige superset van is — geen functionaliteit kwijt, wel twee
+verklarende code-comments teruggezet die tijdens een refactor per ongeluk waren weggevallen.
 
 ## Wat is live en wat niet
 
@@ -57,14 +75,26 @@ event.
 - **Impactscore**: per rijksmonument een indicatie of het epicentrum-monument-paar binnen een
   realistisch "effectgebied" valt - zie hieronder. Kleurcodering (rood/oranje/groen) is
   onafhankelijk van het type-icoon: elke combinatie is mogelijk.
-- **Tijd-animatie**: balk onderaan de kaart met een jaar-slider en afspeelknop. Toont
-  aardbevingen cumulatief tot en met het gekozen jaar, om de opbouw van geïnduceerde Groningse
-  seismiciteit zichtbaar te maken. Werkt alleen op de kaartweergave — de straal-statistieken en
-  impactscore blijven altijd op de volledige dataset gebaseerd (een animatie is bedoeld om te
-  laten zien, niet om te filteren wat er geanalyseerd wordt). Een plaatsnaam zoeken zet de
-  animatie automatisch terug naar "toon alles", zodat het gezochte resultaat altijd zichtbaar is.
+- **Tijd-animatie met dubbele slider**: balk onderaan de kaart met twee handvatten (van–tot),
+  zodat je zowel een specifiek jarenvenster kunt kiezen (bv. 1986–2011) als cumulatief vanaf een
+  startjaar kunt afspelen. Afspelen houdt het gekozen startjaar vast en schuift alleen het
+  eindjaar op, om de opbouw van geïnduceerde Groningse seismiciteit te laten zien. Werkt alleen
+  op de kaartweergave — de straal-statistieken en impactscore blijven altijd op de volledige
+  dataset gebaseerd (een animatie is bedoeld om te laten zien, niet om te filteren wat er
+  geanalyseerd wordt). Een plaatsnaam zoeken zet het venster automatisch terug naar "toon alles",
+  zodat het gezochte resultaat altijd zichtbaar is.
 - **Legenda als inklapbare kaart-overlay** (linksonder) in plaats van vaste ruimte in de
   zijbalk — scheelt aanzienlijk aan verticale ruimte nu de zijbalk meerdere panelen telt.
+- **Bronvermelding**: logo's van RCE en KNMI bovenaan de zijbalk, doorklikbaar naar de officiële
+  sites (Wikimedia Commons, CC0, door de betreffende overheidsdiensten zelf gepubliceerd).
+- **Responsief vanaf 700px**: zijbalk stapelt boven de kaart op smalle schermen i.p.v. ernaast.
+- **Robuuste dataverzoeken**: elk verzoek (KNMI en RCE) heeft een timeout van 20 seconden
+  (`AbortController`); als één van de twee KNMI-categorieën of monumentquery's faalt of te lang
+  duurt, toont de pagina de andere alsnog (`Promise.allSettled`) met een statusmelding welk deel
+  ontbreekt, in plaats van de hele pagina te laten mislukken.
+- **Toegankelijkheid**: verborgen labels bij zoekveld en sliders, `aria-live` op statusregio's
+  zodat schermlezers laadfouten en "geen resultaat"-meldingen meekrijgen, de legenda-header is
+  een echte `<button>` (toetsenbordbedienbaar, `aria-expanded`).
 
 ## Databronnen
 
@@ -87,7 +117,7 @@ realistisch trillingsgebied valt, niet om schade te voorspellen.
 ### Formule
 
 ```
-Rh (hypocentrale afsta nd, km) = √(epicentrale_afstand² + diepte²)
+Rh (hypocentrale afstand, km) = √(epicentrale_afstand² + diepte²)
 score = magnitude − 1.646 · log₁₀(Rh) − 1.052
 ```
 
@@ -134,10 +164,9 @@ betrouwbaar") zodra de diepte van de geselecteerde beving groter is dan 5 km.
 
 Getest (juli 2026) met de responsive-resize-tool van de browser:
 
-- **Mobiel (375px breed): werkt niet goed.** De zijbalk heeft een vaste breedte (340px) en
-  schuift niet mee - op een telefoonformaat ontstaat horizontale overflow en is de kaart
-  nauwelijks zichtbaar. Nog te bouwen: een responsive layout (bv. zijbalk onder de kaart, of
-  inklapbaar, bij smalle viewports).
+- **Mobiel (375px breed): opgelost sinds v0.16.0.** Een `@media (max-width: 700px)`-breakpoint
+  stapelt de zijbalk (max 45% hoogte) boven de kaart (55%) i.p.v. ernaast. Geverifieerd: geen
+  horizontale overflow meer (`document.body.scrollWidth === window.innerWidth`).
 - **Tablet (768px breed): bruikbaar**, zijbalk en kaart zijn beide zichtbaar, geen overflow.
 - **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
   geselecteerd - dat kan rommelig ogen bij een dichte cluster. Gepland: niet-geselecteerde
@@ -150,26 +179,29 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
   epicentrum verscheen nooit omdat er 792 gebouwde monumenten dichterbij lagen. Bevestigd
   gerepareerd voor "Scheepswrak aanloop Molengat" (rijksmonumentnr. 532450, bij Den Helder).
 - Naam is bij slechts ~13% van de rijksmonumenten bekend, huidige functie bij ~8% - dit is een
-  eigenschap van de brondata, geen bug (zie ook de code-comments in `aardbevingen_kaart.html`).
+  eigenschap van de brondata, geen bug (zie ook de code-comments in `docs/index.html`).
+- Afspeelsnelheid van de tijd-animatie staat vast op 400 ms per jaar, nog niet instelbaar.
+- De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
+  timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
+  (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
 
 ## Mogelijke uitbreidingen
 
 - Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
   monument-posities.
 - Caching van monument-queries per (epicentrum, straal)-combinatie.
-- Afspeelsnelheid van de tijd-animatie instelbaar maken (nu vast op 400ms per jaar).
 
 ## Lokaal draaien
 
 Geen build-stap nodig. Twee opties:
 
-1. Dubbelklik `aardbevingen_kaart.html` (werkt in de meeste browsers, `fetch()` naar externe
-   https-bronnen is niet CORS-geblokkeerd vanaf een `file://`-pagina).
+1. Dubbelklik `docs/index.html` (werkt in de meeste browsers, `fetch()` naar externe https-bronnen
+   is niet CORS-geblokkeerd vanaf een `file://`-pagina).
 2. Of serveer de map lokaal voor de beste compatibiliteit:
    ```bash
    python -m http.server 8000
    ```
-   en open `http://localhost:8000/aardbevingen_kaart.html`.
+   en open `http://localhost:8000/docs/index.html`.
 
 ## Licentie
 

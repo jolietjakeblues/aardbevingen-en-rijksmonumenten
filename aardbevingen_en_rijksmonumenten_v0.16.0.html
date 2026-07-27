@@ -159,7 +159,7 @@
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
-      Applicatieversie 0.15.0
+      Applicatieversie 0.16.0
     </footer>
   </div>
   <div id="mapPane">
@@ -609,6 +609,10 @@
     try {
       var radiusM = state.radiusKm * 1000;
       var lon = state.selected.lon, lat = state.selected.lat;
+      // Twee aparte queries: "onroerend gebouwd" is te dicht bevolkt voor een ongelimiteerde
+      // ORDER BY dist, maar juist daardoor verdringt het de veel schaarsere archeologische
+      // monumenten (o.a. scheepswrakken) structureel uit een gedeelde top-400 -- zie commentaar
+      // bij buildMonumentQuery. Apart bevragen voorkomt dat.
       var gebouwdQuery = buildMonumentQuery(lon, lat, radiusM, AARD_GEBOUWD_URI, GEBOUWD_LIMIT);
       var archeologischQuery = buildMonumentQuery(lon, lat, radiusM, AARD_ARCHEOLOGISCH_URI, ARCHEOLOGISCH_LIMIT);
       var results = await Promise.allSettled([
@@ -626,6 +630,8 @@
         throw new Error("Beide monumentenverzoeken zijn mislukt");
       }
 
+      // Type direct meegeven vanuit de query-batch (i.p.v. later op aardLabel-tekst te matchen) --
+      // ondubbelzinnig, want elke batch is al gefilterd op precies één ceo:heeftMonumentAard-URI.
       gebouwd.forEach(function (m) { m.type = "gebouwd"; });
       archeologisch.forEach(function (m) { m.type = "archeologisch"; });
       var monuments = gebouwd.concat(archeologisch);

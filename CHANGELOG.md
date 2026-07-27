@@ -3,6 +3,66 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.16.0 - dubbele tijdslider + bronlogo's
+
+### Toegevoegd
+
+- Twee-handvat tijdslider: een specifiek jarenvenster kiezen (bv. 1986–2011) i.p.v. alleen een
+  cumulatief "tot en met"-jaar. Gebouwd met twee overlappende, transparante `<input type=range>`-
+  elementen (alleen de thumb is klikbaar) plus een losse fill-balk voor het visuele effect, met
+  klem-logica zodat de handvatten elkaar niet kunnen passeren.
+- Logo's van RCE (SVG) en KNMI (PNG) bovenaan de zijbalk als bronvermelding, doorklikbaar naar de
+  officiële sites. Beide gehost op Wikimedia Commons onder CC0, rechtstreeks door de betreffende
+  overheidsdiensten gepubliceerd — geverifieerd via de licentiepagina's voordat ze zijn ingebed.
+
+### Gewijzigd
+
+- Afspeelknop aangepast aan het nieuwe model: houdt het gekozen startjaar (linkerhandvat) vast en
+  schuift alleen het eindjaar (rechterhandvat) op tot het laatste beschikbare jaar.
+- `resetTimeFilter()` en de plaatszoeker zetten nu beide handvatten terug (i.p.v. één jaarwaarde).
+- `initPlaceSearch()` verbeterd door de gebruiker: zoekresultaat wordt nu via een expliciete
+  `newestEvent()`-sortering op datum bepaald in plaats van te vertrouwen op de volgorde waarin de
+  KNMI-CSV's binnenkomen (die garantie verviel toen induced- en tectonic-events werden
+  samengevoegd na de overstap naar rechtstreekse KNMI-data in v0.13).
+- `parseKnmiCsv()` gebruikt nu `Number.isFinite` voor depth/mag i.p.v. losse `isNaN`-checks.
+
+Getest: venster 1986–2011 geeft 1.833 van de 3.750 bevingen met een correct gepositioneerde
+fill-balk (65,2% / 21,7%, exact overeenkomend met de jaarverhouding); handvatten kunnen elkaar
+niet passeren; reset en plaatszoeker zetten het venster correct terug naar "alles".
+
+### Toegevoegd (aanvulling)
+
+Onderstaande punten zijn later in dezelfde v0.16.0-cyclus toegevoegd, in
+`aardbevingen_en_rijksmonumenten_v0.16.0.html` (nu ook `docs/index.html`, de canonieke versie):
+
+- **Mobiele weergave**: `@media (max-width: 700px)`-breakpoint stapelt de zijbalk (max 45%
+  hoogte) boven de kaart (55%) i.p.v. ernaast. Geverifieerd op 375px breed: geen horizontale
+  overflow meer (voorheen een bekende beperking).
+- **Timeouts voor KNMI- en RCE-verzoeken**: `fetchWithTimeout()` met `AbortController`,
+  20 seconden, gebruikt door zowel `sparqlSelect` als `fetchKnmiCsv`.
+- **Gedeeltelijke resultaten bij een falende databron**: `loadEarthquakes()` en
+  `fetchMonuments()` gebruiken nu `Promise.allSettled` i.p.v. `Promise.all` — als bijvoorbeeld
+  alleen de tektonische KNMI-categorie faalt, blijft de geïnduceerde categorie gewoon zichtbaar
+  (en andersom), met een statusmelding welk deel ontbreekt. Alleen als écht alles mislukt, toont
+  de pagina een foutmelding.
+- **Statusmeldingen voor laadfouten en ontbrekende zoekresultaten**: nieuw `#placeStatus`-element
+  toont "Geen aardbeving gevonden bij deze plaatsnaam." bij een lege zoekopdracht; foutmeldingen
+  krijgen `role="alert"`.
+- **Toegankelijkheidslabels en live-statusmeldingen**: verborgen (`visually-hidden`) `<label>`s
+  bij zoekveld, straal-slider en beide tijd-sliderhandvatten; `aria-live="polite"` op
+  `#eqStats`/`#monStatus`/`#placeStatus`; `aria-valuetext` op de straal-slider.
+- **Toetsenbordbediening voor de legenda**: de legenda-header is omgezet van een klikbare `<div>`
+  naar een echte `<button type="button">` met `aria-expanded`, dus native focusbaar en met
+  Enter/spatie te bedienen — geen custom keydown-handler nodig.
+- Melding bij de 400-limiet van gebouwde monumenten verduidelijkt: "minstens 400 ... alleen de
+  400 dichtstbijzijnde getoond" i.p.v. de kortere "limiet bereikt"-tekst.
+
+Geverifieerd: alle zes punten empirisch gecontroleerd (aanwezigheid van `@media`,
+`AbortController`, `Promise.allSettled`, `aria-live`, `visually-hidden`, `<button>` i.p.v. `<div>`
+voor de legenda) en functioneel getest — mobiele layout zonder overflow (375px), tablet
+ongewijzigd bruikbaar (768px), legenda-knop focusbaar en toggelt via `.click()`,
+"niet gevonden"-statusmelding verschijnt bij een onbestaande plaatsnaam.
+
 ## v0.15.0 - eerste publieke release
 
 Deze versie markeert de eerste publiek gedeelde versie van de interactieve kaart.
