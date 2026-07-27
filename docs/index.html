@@ -40,7 +40,7 @@
   .stat-grid .v { font-weight: 600; text-align:right; }
   .legend-item { display:flex; align-items:center; gap:7px; font-size:12px; margin-bottom:5px; }
   .legend-dot { width:11px; height:11px; border-radius:50%; display:inline-block; flex-shrink:0; }
-  .legend-square { width:10px; height:10px; display:inline-block; background:#3a6b35; flex-shrink:0; }
+  .legend-square { width:10px; height:10px; display:inline-block; background:#999999; flex-shrink:0; }
   .eq-info { font-size: 13px; line-height: 1.5; }
   .eq-info b { color: var(--accent); }
   footer { font-size: 11px; color: var(--muted); line-height: 1.5; }
@@ -86,13 +86,13 @@
 
     <div class="panel">
       <h2>Legenda</h2>
-      <div class="legend-item"><span class="legend-dot" style="background:#e63946"></span>Geïnduceerde aardbeving</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#f2c200"></span>Geïnduceerde aardbeving</div>
       <div class="legend-item"><span class="legend-dot" style="background:#1d70a2"></span>Tektonische aardbeving</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#6c757d"></span>Steengroeve explosie</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#999999"></span>Overig / onbekend</div>
-      <div class="legend-item"><span class="legend-square" style="background:#b3261e"></span>Rijksmonument — ruim binnen effectgebied</div>
-      <div class="legend-item"><span class="legend-square"></span>Rijksmonument — net binnen effectgebied</div>
-      <div class="legend-item"><span class="legend-square" style="background:#bbb"></span>Rijksmonument — buiten effectgebied</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#1a1a1a"></span>Steengroeve explosie</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#8b5e3c"></span>Overig / onbekend</div>
+      <div class="legend-item"><span class="legend-square" style="background:#c0392b"></span>Rijksmonument — ruim binnen effectgebied</div>
+      <div class="legend-item"><span class="legend-square" style="background:#e67e22"></span>Rijksmonument — net binnen effectgebied</div>
+      <div class="legend-item"><span class="legend-square" style="background:#2e7d32"></span>Rijksmonument — buiten effectgebied</div>
       <div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km — trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>
     </div>
 
@@ -115,13 +115,20 @@
   var MON_ENDPOINT = "https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/services/cho/sparql";
   var MONUMENTENREGISTER_URL = "https://monumentenregister.cultureelerfgoed.nl/monumenten/";
 
+  // Aardbevingen en rijksmonument-impact gebruiken elk hun eigen kleurenschaal (geen overlap,
+  // bv. niet allebei rood) zodat de twee betekenissen nooit door elkaar lopen op de kaart.
   var CATEGORY_COLORS = {
-    "geïnduceerde aardbevingen": "#e63946",
+    "geïnduceerde aardbevingen": "#f2c200",
     "tektonische aardbevingen": "#1d70a2",
-    "steengroeve explosie": "#6c757d"
+    "steengroeve explosie": "#1a1a1a"
   };
-  var DEFAULT_COLOR = "#999999";
-  var MONUMENT_COLOR = "#3a6b35";
+  var DEFAULT_COLOR = "#8b5e3c";
+  var MARKER_STROKE = "#333333";
+  var MONUMENT_STROKE = "#222222";
+  var MONUMENT_COLOR_IN = "#c0392b";
+  var MONUMENT_COLOR_NET = "#e67e22";
+  var MONUMENT_COLOR_OUT = "#2e7d32";
+  var MONUMENT_COLOR_UNKNOWN = "#999999";
   var MONUMENT_HALF_SIZE_DEG = 0.0004; // klein vierkantje, zoom-onafhankelijk
 
   var state = {
@@ -179,11 +186,13 @@
     return depthKm !== null && depthKm !== undefined && depthKm > IMPACT_DEEP_THRESHOLD_KM;
   }
 
+  // Stoplicht: rood = ruim binnen effectgebied, oranje = net binnen effectgebied,
+  // groen = buiten effectgebied (bewust niet grijs/gedimd -- moet ook op zee/water zichtbaar zijn).
   function impactColor(score) {
-    if (score === null) return MONUMENT_COLOR;
-    if (score >= 1) return "#b3261e";
-    if (score >= 0) return MONUMENT_COLOR;
-    return "#bbbbbb";
+    if (score === null) return MONUMENT_COLOR_UNKNOWN;
+    if (score >= 1) return MONUMENT_COLOR_IN;
+    if (score >= 0) return MONUMENT_COLOR_NET;
+    return MONUMENT_COLOR_OUT;
   }
 
   // Neemt het eerste coordinatenpaar uit een WKT-string (Point of Polygon) als representatief punt.
@@ -308,9 +317,9 @@
       var radius = ev.mag !== null ? Math.max(3, ev.mag * 2.2) : 3;
       var marker = L.circleMarker([ev.lat, ev.lon], {
         radius: radius,
-        color: colorForCategory(ev.category),
+        color: MARKER_STROKE,
         fillColor: colorForCategory(ev.category),
-        fillOpacity: 0.75,
+        fillOpacity: 0.85,
         weight: 1
       });
       var dateStr = ev.date ? new Date(ev.date).toLocaleDateString("nl-NL") : "onbekende datum";
@@ -452,9 +461,9 @@
         [m.lat + MONUMENT_HALF_SIZE_DEG, m.lon + MONUMENT_HALF_SIZE_DEG]
       ];
       var rect = L.rectangle(bounds, {
-        color: color,
+        color: MONUMENT_STROKE,
         fillColor: color,
-        fillOpacity: score !== null && score < 0 ? 0.4 : 0.85,
+        fillOpacity: 0.85,
         weight: 1
       });
       rect.bindPopup(
