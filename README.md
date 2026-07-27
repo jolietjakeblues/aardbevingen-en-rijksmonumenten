@@ -62,6 +62,9 @@ event.
   met autocomplete, gevuld uit de toponiemen die al in de aardbevingsdata zitten - geen aparte
   geocoding-service nodig). Springt naar de meest recente beving bij die plaatsnaam.
 - **Straal-slider** (1–200 km): tekent een cirkel en herberekent statistieken en monumenten live.
+- **Automatisch in-/uitzoomen**: de kaart past zichzelf aan op de straal-cirkel (`fitBounds`),
+  zowel bij het selecteren van een epicentrum als bij het verslepen van de straal-slider — niet
+  meer zelf hoeven te zoomen.
 - **Aardbevingen-popup**: toponiem, datum/tijd, magnitude (ML), diepte, categorie (geïnduceerd /
   tektonisch - de KNMI-bron kent geen aparte steengroeve-categorie).
 - **Rijksmonumenten-popup**: naam (indien aanwezig), oorspronkelijke functie (vrijwel altijd

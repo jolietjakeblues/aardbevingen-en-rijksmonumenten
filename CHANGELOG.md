@@ -3,6 +3,18 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.17.0 - automatisch in-/uitzoomen op de straal
+
+- `drawRadiusCircle()` roept nu `map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20],
+  maxZoom: 16 })` aan na het tekenen van de cirkel. Werkt automatisch bij zowel het selecteren
+  van een epicentrum als bij het verslepen van de straal-slider, omdat beide door dezelfde
+  functie lopen. Gebruiker hoeft niet meer zelf te zoomen.
+- `maxZoom: 16` voorkomt een absurd ver ingezoomde weergave bij een straal van 1-2 km.
+- Getest, los van de eigen `map.setView(..., 12)` van de plaatszoeker (die anders tijdelijk
+  een afwijkende zoom laat zien voordat `fitBounds` 'm corrigeert): rechtstreeks op een
+  aardbeving-marker geklikt geeft één schone zoomlevel per straal — 25 km → zoom 10, 150 km →
+  zoom 8, 2 km → zoom 14 (tegen de maxZoom-cap aan).
+
 ## v0.16.0 - dubbele tijdslider + bronlogo's
 
 ### Toegevoegd
