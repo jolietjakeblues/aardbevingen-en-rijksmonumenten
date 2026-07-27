@@ -531,6 +531,10 @@
       dashArray: "6 6",
       fill: false
     }).addTo(map);
+    // Automatisch in-/uitzoomen op de straal-cirkel, zodat de gebruiker niet meer zelf hoeft te
+    // zoomen na een selectie of straal-wijziging. maxZoom voorkomt een absurd ver ingezoomde
+    // weergave bij een straal van maar 1 km.
+    map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20], maxZoom: 16 });
   }
 
   function renderSelectedInfo() {

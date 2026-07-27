@@ -7,21 +7,21 @@ Standalone HTML-bestand, geen build-stap, geen servercode, geen API-key nodig.
 Repository: `github.com/jolietjakeblues/aardbevingen-en-rijksmonumenten`
 
 **Live:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
-(GitHub Pages, geverifieerd bereikbaar — HTTP 200). Let op: dit toont de laatst *gepushte*
+(GitHub Pages, geverifieerd bereikbaar - HTTP 200). Let op: dit toont de laatst *gepushte*
 commit; lokale wijzigingen die nog niet gecommit/gepusht zijn (zoals de v0.16.0-toevoegingen op
 het moment van schrijven) staan er nog niet op.
 
 ## Bestandsstructuur
 
-- **`docs/index.html`** — de actuele, canonieke versie. Dit is ook het bestand dat GitHub Pages
+- **`docs/index.html`** - de actuele, canonieke versie. Dit is ook het bestand dat GitHub Pages
   serveert zodra Pages is ingesteld op de map `docs/` (standaardconventie: geen aparte
   build-/deploy-stap nodig).
-- `aardbevingen_en_rijksmonumenten_v0.16.0.html` — momentopname van dezelfde inhoud onder een
+- `aardbevingen_en_rijksmonumenten_v0.16.0.html` - momentopname van dezelfde inhoud onder een
   versienummer, voor wie een specifieke release wil terugvinden zonder door de git-historie te
   hoeven zoeken.
 
 Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
-`docs/index.html` er een volledige superset van is — geen functionaliteit kwijt, wel twee
+`docs/index.html` er een volledige superset van is - geen functionaliteit kwijt, wel twee
 verklarende code-comments teruggezet die tijdens een refactor per ongeluk waren weggevallen.
 
 ## Wat is live en wat niet
@@ -46,7 +46,7 @@ aardbevingen-graph bleek zelf een periodieke import van precies dezelfde twee KN
 zijn (te zien aan `prov:wasDerivedFrom` op elk event, wijzend naar `rdsa.knmi.nl`). Rechtstreeks
 bij de bron ophalen is dus zowel actueler (geen wachten op RCE's eigen ververscyclus) als
 completer: KNMI's archief gaat terug tot 1911, verder terug dan wat er via RCE beschikbaar bleek.
-Kanttekening: het KNMI kent alleen de categorieën "induced" en "tectonic" — de categorie
+Kanttekening: het KNMI kent alleen de categorieën "induced" en "tectonic" - de categorie
 "steengroeve explosie" die in de RCE-versie voorkwam, bestaat niet in deze bron en is dus
 vervallen. Rijksmonumenten blijven wel via RCE lopen; dat is een andere databron met een ander
 doel (cultureel erfgoed, niet seismologie).
@@ -63,14 +63,14 @@ event.
   geocoding-service nodig). Springt naar de meest recente beving bij die plaatsnaam.
 - **Straal-slider** (1–200 km): tekent een cirkel en herberekent statistieken en monumenten live.
 - **Aardbevingen-popup**: toponiem, datum/tijd, magnitude (ML), diepte, categorie (geïnduceerd /
-  tektonisch — de KNMI-bron kent geen aparte steengroeve-categorie).
+  tektonisch - de KNMI-bron kent geen aparte steengroeve-categorie).
 - **Rijksmonumenten-popup**: naam (indien aanwezig), oorspronkelijke functie (vrijwel altijd
   aanwezig) én huidige functie apart getoond wanneer bekend, monumentaard (archeologisch /
   onroerend gebouwd), link naar het monumentenregister én de linked-data URI zelf.
 - **Alleen geldige rijksmonumenten**: gefilterd op juridische status = "rijksmonument" (dus niet
   "voorbeschermd" of "geen rijksmonument").
 - **Icoon per type**: huisje voor "onroerend gebouwd", schop voor "archeologisch" (o.a.
-  scheepswrakken) — vaste pixelgrootte, dus zichtbaar op elk zoomniveau (zie "Bekende
+  scheepswrakken) - vaste pixelgrootte, dus zichtbaar op elk zoomniveau (zie "Bekende
   beperkingen" voor de bug die dit repareerde).
 - **Impactscore**: per rijksmonument een indicatie of het epicentrum-monument-paar binnen een
   realistisch "effectgebied" valt - zie hieronder. Kleurcodering (rood/oranje/groen) is
@@ -79,12 +79,12 @@ event.
   zodat je zowel een specifiek jarenvenster kunt kiezen (bv. 1986–2011) als cumulatief vanaf een
   startjaar kunt afspelen. Afspelen houdt het gekozen startjaar vast en schuift alleen het
   eindjaar op, om de opbouw van geïnduceerde Groningse seismiciteit te laten zien. Werkt alleen
-  op de kaartweergave — de straal-statistieken en impactscore blijven altijd op de volledige
+  op de kaartweergave - de straal-statistieken en impactscore blijven altijd op de volledige
   dataset gebaseerd (een animatie is bedoeld om te laten zien, niet om te filteren wat er
   geanalyseerd wordt). Een plaatsnaam zoeken zet het venster automatisch terug naar "toon alles",
   zodat het gezochte resultaat altijd zichtbaar is.
 - **Legenda als inklapbare kaart-overlay** (linksonder) in plaats van vaste ruimte in de
-  zijbalk — scheelt aanzienlijk aan verticale ruimte nu de zijbalk meerdere panelen telt.
+  zijbalk - scheelt aanzienlijk aan verticale ruimte nu de zijbalk meerdere panelen telt.
 - **Bronvermelding**: logo's van RCE en KNMI bovenaan de zijbalk, doorklikbaar naar de officiële
   sites (Wikimedia Commons, CC0, door de betreffende overheidsdiensten zelf gepubliceerd).
 - **Responsief vanaf 700px**: zijbalk stapelt boven de kaart op smalle schermen i.p.v. ernaast.
@@ -127,7 +127,7 @@ score = magnitude − 1.646 · log₁₀(Rh) − 1.052
 - **oranje** (`0 ≤ score < 1`): net binnen effectgebied
 - **groen** (`score < 0`): buiten effectgebied
 
-Bewust geen grijs/gedimd voor "buiten effectgebied" — dat was op een grijze of blauwe
+Bewust geen grijs/gedimd voor "buiten effectgebied" - dat was op een grijze of blauwe
 ondergrond (bv. rijksmonumenten in zee, zoals scheepswrakken) nauwelijks te onderscheiden van de
 kaartachtergrond. Aardbevingen gebruiken een aparte kleurenschaal (geel = geïnduceerd, blauw =
 tektonisch) zodat er geen overlap is met de rood/oranje/groen van de monument-impact.
@@ -172,10 +172,10 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
   geselecteerd - dat kan rommelig ogen bij een dichte cluster. Gepland: niet-geselecteerde
   bevingen dimmen of filteren zodra er een epicentrum actief is.
 - Rijksmonumenten worden in twee aparte queries opgehaald: "onroerend gebouwd" (gelimiteerd tot
-  400, dichtstbijzijnde eerst — bij een grote straal in een dichte regio zoals Amsterdam kan het
+  400, dichtstbijzijnde eerst - bij een grote straal in een dichte regio zoals Amsterdam kan het
   werkelijke aantal hoger liggen) en "archeologisch" (limiet 3.000, landelijk maar ~1.500 dus in
   de praktijk ongelimiteerd). Deze splitsing is bewust: bij één gedeelde LIMIT 400 verdrongen
-  gebouwde monumenten de archeologische categorie systematisch — een scheepswrak op 25 km van een
+  gebouwde monumenten de archeologische categorie systematisch - een scheepswrak op 25 km van een
   epicentrum verscheen nooit omdat er 792 gebouwde monumenten dichterbij lagen. Bevestigd
   gerepareerd voor "Scheepswrak aanloop Molengat" (rijksmonumentnr. 532450, bij Den Helder).
 - Naam is bij slechts ~13% van de rijksmonumenten bekend, huidige functie bij ~8% - dit is een

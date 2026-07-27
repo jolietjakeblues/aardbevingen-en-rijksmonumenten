@@ -13,7 +13,7 @@ eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot too
   klem-logica zodat de handvatten elkaar niet kunnen passeren.
 - Logo's van RCE (SVG) en KNMI (PNG) bovenaan de zijbalk als bronvermelding, doorklikbaar naar de
   officiële sites. Beide gehost op Wikimedia Commons onder CC0, rechtstreeks door de betreffende
-  overheidsdiensten gepubliceerd — geverifieerd via de licentiepagina's voordat ze zijn ingebed.
+  overheidsdiensten gepubliceerd - geverifieerd via de licentiepagina's voordat ze zijn ingebed.
 
 ### Gewijzigd
 
@@ -41,7 +41,7 @@ Onderstaande punten zijn later in dezelfde v0.16.0-cyclus toegevoegd, in
 - **Timeouts voor KNMI- en RCE-verzoeken**: `fetchWithTimeout()` met `AbortController`,
   20 seconden, gebruikt door zowel `sparqlSelect` als `fetchKnmiCsv`.
 - **Gedeeltelijke resultaten bij een falende databron**: `loadEarthquakes()` en
-  `fetchMonuments()` gebruiken nu `Promise.allSettled` i.p.v. `Promise.all` — als bijvoorbeeld
+  `fetchMonuments()` gebruiken nu `Promise.allSettled` i.p.v. `Promise.all` - als bijvoorbeeld
   alleen de tektonische KNMI-categorie faalt, blijft de geïnduceerde categorie gewoon zichtbaar
   (en andersom), met een statusmelding welk deel ontbreekt. Alleen als écht alles mislukt, toont
   de pagina een foutmelding.
@@ -53,13 +53,13 @@ Onderstaande punten zijn later in dezelfde v0.16.0-cyclus toegevoegd, in
   `#eqStats`/`#monStatus`/`#placeStatus`; `aria-valuetext` op de straal-slider.
 - **Toetsenbordbediening voor de legenda**: de legenda-header is omgezet van een klikbare `<div>`
   naar een echte `<button type="button">` met `aria-expanded`, dus native focusbaar en met
-  Enter/spatie te bedienen — geen custom keydown-handler nodig.
+  Enter/spatie te bedienen - geen custom keydown-handler nodig.
 - Melding bij de 400-limiet van gebouwde monumenten verduidelijkt: "minstens 400 ... alleen de
   400 dichtstbijzijnde getoond" i.p.v. de kortere "limiet bereikt"-tekst.
 
 Geverifieerd: alle zes punten empirisch gecontroleerd (aanwezigheid van `@media`,
 `AbortController`, `Promise.allSettled`, `aria-live`, `visually-hidden`, `<button>` i.p.v. `<div>`
-voor de legenda) en functioneel getest — mobiele layout zonder overflow (375px), tablet
+voor de legenda) en functioneel getest - mobiele layout zonder overflow (375px), tablet
 ongewijzigd bruikbaar (768px), legenda-knop focusbaar en toggelt via `.click()`,
 "niet gevonden"-statusmelding verschijnt bij een onbestaande plaatsnaam.
 
@@ -151,7 +151,7 @@ Deze versie markeert de eerste publiek gedeelde versie van de interactieve kaart
 ## v0.9 - archeologische monumenten (scheepswrakken) waren onvindbaar
 - Bug gevonden en gefixt: rijksmonumenten werden opgehaald met één query, `ORDER BY afstand
   LIMIT 400`. In monument-dichte gebieden verdrong "onroerend gebouwd" de veel schaarsere
-  categorie "archeologisch" (o.a. scheepswrakken) volledig uit die top-400 — bevestigd voor
+  categorie "archeologisch" (o.a. scheepswrakken) volledig uit die top-400 - bevestigd voor
   "Scheepswrak aanloop Molengat" (nr. 532450, bij Den Helder): 792 gebouwde monumenten lagen
   dichter bij het dichtstbijzijnde epicentrum (Anna Paulowna) dan dit wrak, dat daardoor nooit
   verscheen, ongeacht de gekozen straal.
@@ -162,7 +162,7 @@ Deze versie markeert de eerste publiek gedeelde versie van de interactieve kaart
 
 ## v0.8 - kleurenschema herzien
 - Rijksmonument-impactkleuren omgezet naar een stoplicht: rood (ruim binnen effectgebied),
-  oranje (net binnen effectgebied), groen (buiten effectgebied) — voorheen groen/grijs, wat
+  oranje (net binnen effectgebied), groen (buiten effectgebied) - voorheen groen/grijs, wat
   contra-intuïtief was (groen = "matig" i.p.v. "veilig") en op zee/water nauwelijks zichtbaar.
 - Aardbevingen-categorieën omgezet naar een aparte kleurenschaal zonder overlap met de
   monument-kleuren: geel (geïnduceerd, was rood), blauw (tektonisch, ongewijzigd), zwart
