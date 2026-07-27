@@ -16,9 +16,13 @@ het moment van schrijven) staan er nog niet op.
 - **`docs/index.html`** - de actuele, canonieke versie. Dit is ook het bestand dat GitHub Pages
   serveert zodra Pages is ingesteld op de map `docs/` (standaardconventie: geen aparte
   build-/deploy-stap nodig).
-- `aardbevingen_en_rijksmonumenten_v0.16.0.html` - momentopname van dezelfde inhoud onder een
+- **`docs/achtergrond.html`** - statische informatiepagina (geen kaart/JS-state) over waarom
+  aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
+  van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
+  versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
+- `aardbevingen_en_rijksmonumenten_v0.16.0.html` - momentopname van `index.html` onder een
   versienummer, voor wie een specifieke release wil terugvinden zonder door de git-historie te
-  hoeven zoeken.
+  hoeven zoeken. Bevat (nog) geen kopie van `achtergrond.html`, dat is nieuw sinds v0.17.0/1.0.
 
 Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
 `docs/index.html` er een volledige superset van is - geen functionaliteit kwijt, wel twee
@@ -98,6 +102,11 @@ event.
 - **Toegankelijkheid**: verborgen labels bij zoekveld en sliders, `aria-live` op statusregio's
   zodat schermlezers laadfouten en "geen resultaat"-meldingen meekrijgen, de legenda-header is
   een echte `<button>` (toetsenbordbedienbaar, `aria-expanded`).
+- **Achtergrondpagina**: een tweede, statische pagina (`docs/achtergrond.html`, bereikbaar via de
+  link onderaan de kaart) met uitleg over waarom aardbevingen en rijksmonumenten samenhangen, hoe
+  het RCE-werkproces voor versterking met erfgoedbehoud werkt, en hoe de kaart zich daartoe
+  verhoudt. Eigen samenvatting op basis van drie geverifieerde RCE-publicaties (zie bronvermelding
+  op de pagina zelf), geen letterlijke overname.
 
 ## Databronnen
 
