@@ -3,9 +3,8 @@
 Interactieve kaart van Nederlandse aardbevingen met een straal-selectie die laat zien welke
 rijksmonumenten binnen die straal liggen, inclusief een indicatieve "impactscore" per monument.
 
-Standalone HTML-bestand (`aardbevingen_kaart.html`), geen build-stap, geen server-side code,
+Standalone HTML-bestand (`aardbevingen_kaart.html`), geen build-stap, geen servercode,
 geen API-key nodig. Bedoelde repository: `github.com/jolietjakeblues/aardbevingen-en-rijksmonumenten`
-(nog niet gepubliceerd - dit is de lokale voorbereiding).
 
 ## Wat is live en wat niet
 
@@ -69,18 +68,17 @@ event.
 
 ## Databronnen
 
-- Aardbevingen: `https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/aardbevingen/sparql`
-  (graph `https://linkeddata.cultureelerfgoed.nl/graph/aardbevingen`)
-- Rijksmonumenten: `https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/services/cho/sparql`
-  (juridische status en monumentaard specifiek uit graph
-  `https://linkeddata.cultureelerfgoed.nl/graph/instanties-rce`, om dubbeltellingen te vermijden)
-- Ontologie: [CEO](https://linkeddata.cultureelerfgoed.nl/def/ceo) (Rijksdienst voor het
-  Cultureel Erfgoed)
+- **Aardbevingen:** KNMI, rechtstreeks opgehaald als CSV via `rdsa.knmi.nl`.
+  De categorieën `induced` en `tectonic` worden afzonderlijk bevraagd.
+- **Rijksmonumenten:** RCE Cultureel Erfgoed Open Data, via het CHO
+  SPARQL-endpoint.
+- **Ontologie:** CEO, de Cultureel Erfgoed Ontologie van de Rijksdienst
+  voor het Cultureel Erfgoed.
 
-Beide endpoints hebben open CORS (`Access-Control-Allow-Origin: *`), vandaar dat rechtstreeks
-bevragen vanuit de browser werkt zonder eigen backend of proxy.
+De gebruikte endpoints ondersteunen CORS. Daardoor kan de browser de gegevens
+rechtstreeks ophalen en is geen eigen backend of proxy nodig.
 
-## Impactscore - uitgelegd
+## Impactscore
 
 De impactscore is een **vereenvoudigde, illustratieve indicator** - geen gevalideerd schade- of
 risicomodel. Doel: laten zien of een epicentrum-monument-combinatie plausibel binnen een
@@ -89,7 +87,7 @@ realistisch trillingsgebied valt, niet om schade te voorspellen.
 ### Formule
 
 ```
-Rh (hypocentrale afstand, km) = √(epicentrale_afstand² + diepte²)
+Rh (hypocentrale afsta nd, km) = √(epicentrale_afstand² + diepte²)
 score = magnitude − 1.646 · log₁₀(Rh) − 1.052
 ```
 
@@ -102,12 +100,11 @@ score = magnitude − 1.646 · log₁₀(Rh) − 1.052
 Bewust geen grijs/gedimd voor "buiten effectgebied" — dat was op een grijze of blauwe
 ondergrond (bv. rijksmonumenten in zee, zoals scheepswrakken) nauwelijks te onderscheiden van de
 kaartachtergrond. Aardbevingen gebruiken een aparte kleurenschaal (geel = geïnduceerd, blauw =
-tektonisch, zwart = steengroeve-explosie, bruin = overig/onbekend) zodat er geen overlap is met
-de rood/oranje/groen van de monument-impact.
+tektonisch) zodat er geen overlap is met de rood/oranje/groen van de monument-impact.
 
 ### Kalibratie (met bronnen)
 
-De coëfficiënten (1.646 en 1.052) komen niet uit de losse pols - het zijn de resultaten van een
+De coëfficiënten (1.646 en 1.052) zijn gebaseerd op gepubliceerde gegevens - het zijn de resultaten van een
 lineaire regressie op `log₁₀(Rh)` tegen magnitude, gefit op **drie echte, gepubliceerde
 effectgebieden** van het Instituut Mijnbouwschade Groningen (IMG), allemaal op basis van dezelfde
 methode (trillingssnelheidsdrempel 2 mm/s bij 1% overschrijdingskans, Bommer et al.-methode):
@@ -133,7 +130,7 @@ betrouwbaar") zodra de diepte van de geselecteerde beving groter is dan 5 km.
 
 **Dit is en blijft een vuistregel voor verkenning, geen schadebeoordeling.**
 
-## Bekende beperkingen / roadmap
+## Bekende beperkingen en roadmap
 
 Getest (juli 2026) met de responsive-resize-tool van de browser:
 
@@ -155,7 +152,7 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - Naam is bij slechts ~13% van de rijksmonumenten bekend, huidige functie bij ~8% - dit is een
   eigenschap van de brondata, geen bug (zie ook de code-comments in `aardbevingen_kaart.html`).
 
-## Mogelijke toekomstige toevoegingen
+## Mogelijke uitbreidingen
 
 - Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
   monument-posities.
@@ -183,7 +180,9 @@ IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
 
 ## Dank aan
 
-- Rijksdienst voor het Cultureel Erfgoed (RCE) - linked data voor aardbevingen en rijksmonumenten
-- Instituut Mijnbouwschade Groningen (IMG) / schadedoormijnbouw.nl - effectgebied-cijfers voor de
-  impactscore-kalibratie
-- [Leaflet](https://leafletjs.com/) en [CARTO](https://carto.com/) - kaartweergave
+- Het KNMI voor de openbare aardbevingsgegevens.
+- De Rijksdienst voor het Cultureel Erfgoed voor de linked data over
+  rijksmonumenten en de Cultureel Erfgoed Ontologie.
+- Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over
+  effectgebieden.
+- Leaflet en CARTO voor de kaartweergave.

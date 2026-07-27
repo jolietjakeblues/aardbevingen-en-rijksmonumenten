@@ -3,13 +3,38 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.15.0 - eerste publieke release
+
+Deze versie markeert de eerste publiek gedeelde versie van de interactieve kaart.
+
+### Toegevoegd
+
+- Documentatie voorbereid voor openbaar gebruik.
+- Duidelijke toelichting op de live databronnen en externe afhankelijkheden.
+- Expliciete waarschuwing dat de impactscore geen schade- of risicomodel is.
+
+### Gewijzigd
+
+- Verouderde verwijzingen naar de voormalige RCE-aardbevingsdataset verwijderd.
+- Documentatie gelijkgetrokken met de rechtstreekse KNMI-koppeling.
+- Beschrijving van categorieën, kleurgebruik en databronnen gecorrigeerd.
+- Formuleringen en typfouten in README en changelog verbeterd.
+
+### Bekende beperkingen
+
+- De mobiele weergave is nog niet geschikt voor kleine schermen.
+- De query voor gebouwde rijksmonumenten toont maximaal 400 resultaten.
+- De werking is afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en
+  unpkg.
+- De impactscore is alleen bedoeld als verkennende visualisatie.
+
 ## v0.14 - functienamen ontdaan van codeachtervoegsel
 - CEO-functienamen zoals "Boerderij (M1)" of "Gemaal(M3)" tonen nu zonder het interne
   codeachtervoegsel tussen haakjes ("Boerderij", "Gemaal") -- puur cosmetisch bij weergave via
   een regex (`stripParenSuffix`), de ruwe data blijft ongewijzigd. Werkt op zowel "naam (code)"
   als "naam(code)" (inconsistente spatiëring in de brondata).
 
-## v0.13 - aardbevingen rechtstreeks live bij het KNMI
+## v0.13 - aardbevingen rechtstreeks bij het KNMI
 - Aardbevingen komen niet langer via RCE's SPARQL-endpoint, maar rechtstreeks van het KNMI
   (`rdsa.knmi.nl/abcws/event/query`, CSV, induced + tectonic apart bevraagd). Gevonden via de
   `prov:wasDerivedFrom`-triples op RCE's eigen aardbevingen-graph, die naar exact deze twee
@@ -54,7 +79,7 @@ eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot too
 
 ## v0.10 - monument-markers onzichtbaar bij uitgezoomde weergave
 - Tweede, onafhankelijke bug rond hetzelfde scheepswrak gevonden: nadat v0.9 het wrak wél in de
-  resultaten kreeg (bij straal ≥57 km), bleef het marker onzichtbaar op de kaart zelf.
+  resultaten kreeg (bij straal ≥57 km), bleef de marker onzichtbaar op de kaart zelf.
 - Oorzaak: monumenten werden getekend met `L.rectangle` op een vaste breedte in graden (~90 m).
   Bij een breed uitgezoomde weergave (straal 60 km in beeld) krimpt dat tot onder de 1 pixel —
   bevestigd met 265 monument-elementen die een lege bounding box hadden. De aardbeving-markers
@@ -126,6 +151,6 @@ eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot too
   meervoudige triples te voorkomen.
 
 ## v0.1 - herbouw van een eerdere, verloren versie
-- Basisopzet met Leaflet + CARMO-kaart, sidebar met straal-slider, live rijksmonumenten-query
+- Basisopzet met Leaflet + CARTO-kaart, sidebar met straal-slider, live rijksmonumenten-query
   met `geof:distance`, herbouwd op basis van een bewaard gebleven project-samenvatting nadat het
   originele HTML-bestand niet meer op schijf stond.
