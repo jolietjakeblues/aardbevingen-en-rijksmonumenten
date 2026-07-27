@@ -118,8 +118,13 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
   geselecteerd - dat kan rommelig ogen bij een dichte cluster. Gepland: niet-geselecteerde
   bevingen dimmen of filteren zodra er een epicentrum actief is.
-- Rijksmonumenten-resultaat is gelimiteerd tot 400 (dichtstbijzijnde eerst) - bij een grote
-  straal in een dichte regio (bv. Amsterdam) kan het werkelijke aantal hoger liggen.
+- Rijksmonumenten worden in twee aparte queries opgehaald: "onroerend gebouwd" (gelimiteerd tot
+  400, dichtstbijzijnde eerst — bij een grote straal in een dichte regio zoals Amsterdam kan het
+  werkelijke aantal hoger liggen) en "archeologisch" (limiet 3.000, landelijk maar ~1.500 dus in
+  de praktijk ongelimiteerd). Deze splitsing is bewust: bij één gedeelde LIMIT 400 verdrongen
+  gebouwde monumenten de archeologische categorie systematisch — een scheepswrak op 25 km van een
+  epicentrum verscheen nooit omdat er 792 gebouwde monumenten dichterbij lagen. Bevestigd
+  gerepareerd voor "Scheepswrak aanloop Molengat" (rijksmonumentnr. 532450, bij Den Helder).
 - Naam is bij slechts ~13% van de rijksmonumenten bekend, huidige functie bij ~8% - dit is een
   eigenschap van de brondata, geen bug (zie ook de code-comments in `aardbevingen_kaart.html`).
 

@@ -244,9 +244,18 @@
 
   // Concept-URI's geverifieerd tegen de live RCE-dataset (graph instanties-rce).
   var STATUS_RIJKSMONUMENT_URI = "https://data.cultureelerfgoed.nl/term/id/rn/2/b2d9a59a-fe1e-4552-9a05-3c2acddff864";
+  var AARD_GEBOUWD_URI = "https://data.cultureelerfgoed.nl/term/id/rn/2/fc966a68-8863-4970-a83e-110f96006c21";
+  var AARD_ARCHEOLOGISCH_URI = "https://data.cultureelerfgoed.nl/term/id/rn/2/b673c8c1-5d93-496d-8f9e-89133d579d77";
   var INSTANTIES_GRAPH = "https://linkeddata.cultureelerfgoed.nl/graph/instanties-rce";
+  var GEBOUWD_LIMIT = 400;
+  // Archeologische rijksmonumenten (o.a. scheepswrakken) zijn landelijk maar ~1.500 -- geen
+  // praktische cap nodig. Apart bevraagd, want anders verdwijnen ze structureel uit de top-400
+  // van de veel dichtere "onroerend gebouwd"-categorie (bevestigd: bij Anna Paulowna liggen 792
+  // gebouwde monumenten dichterbij dan het scheepswrak "aanloop Molengat", dat daardoor nooit in
+  // een LIMIT-400-resultaat terechtkwam, ook niet bij een straal die het ruim zou moeten dekken).
+  var ARCHEOLOGISCH_LIMIT = 3000;
 
-  function buildMonumentQuery(lon, lat, radiusM) {
+  function buildMonumentQuery(lon, lat, radiusM, aardUri, limit) {
     return 'PREFIX ceo: <https://linkeddata.cultureelerfgoed.nl/def/ceo#>\n' +
       'PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n' +
       'PREFIX geof: <http://www.opengis.net/def/function/geosparql/>\n' +
@@ -261,8 +270,9 @@
       // Alleen geldige (actuele) rijksmonumenten: juridische status en monumentaard leven in de
       // graph instanties-rce; zonder deze GRAPH-restrictie riskeert de query dubbeltellingen.
       '  GRAPH <' + INSTANTIES_GRAPH + '> {\n' +
-      '    ?mon ceo:heeftJuridischeStatus <' + STATUS_RIJKSMONUMENT_URI + '> .\n' +
-      '    OPTIONAL { ?mon ceo:heeftMonumentAard ?aardUri . ?aardUri skos:prefLabel ?aardLabel }\n' +
+      '    ?mon ceo:heeftJuridischeStatus <' + STATUS_RIJKSMONUMENT_URI + '> ;\n' +
+      '         ceo:heeftMonumentAard <' + aardUri + '> .\n' +
+      '    OPTIONAL { ?mon ceo:heeftMonumentAard ?aardUri2 . ?aardUri2 skos:prefLabel ?aardLabel }\n' +
       '  }\n' +
       '  OPTIONAL { ?mon ceo:heeftNaam ?naamObj . ?naamObj ceo:naam ?naam }\n' +
       // Oorspronkelijke functie is de primaire weergave (bij ~100% van de geldige rijksmonumenten gevuld);
@@ -272,7 +282,7 @@
       '}\n' +
       'GROUP BY ?mon ?nr\n' +
       'ORDER BY ?minDist\n' +
-      'LIMIT 400';
+      'LIMIT ' + limit;
   }
 
   function initMap() {
@@ -415,34 +425,52 @@
     monDebounceTimer = setTimeout(fetchMonuments, 350);
   }
 
+  function mapMonumentBindings(bindings) {
+    return bindings.map(function (b) {
+      var pt = parseFirstLonLat(b.wktSample.value);
+      return {
+        uri: b.mon.value,
+        nr: b.nr.value,
+        lat: pt ? pt.lat : null,
+        lon: pt ? pt.lon : null,
+        naam: b.naamOut ? b.naamOut.value : null,
+        functieOorspr: b.funcOorsprOut ? b.funcOorsprOut.value : null,
+        functieHuidig: b.funcHuidigOut ? b.funcHuidigOut.value : null,
+        aard: b.aardOut ? b.aardOut.value : null,
+        distKm: b.minDist ? parseFloat(b.minDist.value) / 1000 : null
+      };
+    }).filter(function (m) { return m.lat !== null; });
+  }
+
   async function fetchMonuments() {
     if (!state.selected) return;
     var token = ++state.monFetchToken;
     $("monStatus").innerHTML = '<span class="loading">Rijksmonumenten ophalen…</span>';
     try {
-      var query = buildMonumentQuery(state.selected.lon, state.selected.lat, state.radiusKm * 1000);
-      var bindings = await sparqlSelect(MON_ENDPOINT, query);
+      var radiusM = state.radiusKm * 1000;
+      var lon = state.selected.lon, lat = state.selected.lat;
+      // Twee aparte queries: "onroerend gebouwd" is te dicht bevolkt voor een ongelimiteerde
+      // ORDER BY dist, maar juist daardoor verdringt het de veel schaarsere archeologische
+      // monumenten (o.a. scheepswrakken) structureel uit een gedeelde top-400 -- zie commentaar
+      // bij buildMonumentQuery. Apart bevragen voorkomt dat.
+      var gebouwdQuery = buildMonumentQuery(lon, lat, radiusM, AARD_GEBOUWD_URI, GEBOUWD_LIMIT);
+      var archeologischQuery = buildMonumentQuery(lon, lat, radiusM, AARD_ARCHEOLOGISCH_URI, ARCHEOLOGISCH_LIMIT);
+      var results = await Promise.all([
+        sparqlSelect(MON_ENDPOINT, gebouwdQuery),
+        sparqlSelect(MON_ENDPOINT, archeologischQuery)
+      ]);
       if (token !== state.monFetchToken) return; // verouderd resultaat, negeren
 
-      var monuments = bindings.map(function (b) {
-        var pt = parseFirstLonLat(b.wktSample.value);
-        return {
-          uri: b.mon.value,
-          nr: b.nr.value,
-          lat: pt ? pt.lat : null,
-          lon: pt ? pt.lon : null,
-          naam: b.naamOut ? b.naamOut.value : null,
-          functieOorspr: b.funcOorsprOut ? b.funcOorsprOut.value : null,
-          functieHuidig: b.funcHuidigOut ? b.funcHuidigOut.value : null,
-          aard: b.aardOut ? b.aardOut.value : null,
-          distKm: b.minDist ? parseFloat(b.minDist.value) / 1000 : null
-        };
-      }).filter(function (m) { return m.lat !== null; });
+      var gebouwd = mapMonumentBindings(results[0]);
+      var archeologisch = mapMonumentBindings(results[1]);
+      var monuments = gebouwd.concat(archeologisch);
 
       renderMonuments(monuments);
       $("monStatus").innerHTML = '<span class="eq-info"><b>' + monuments.length + '</b> geldig rijksmonument' +
         (monuments.length === 1 ? "" : "en") + ' binnen ' + state.radiusKm + ' km' +
-        (monuments.length >= 400 ? " (limiet van 400 bereikt, dichtstbijzijnde getoond)" : "") + '</span>';
+        ' (' + gebouwd.length + ' onroerend gebouwd' +
+        (gebouwd.length >= GEBOUWD_LIMIT ? ", limiet bereikt, dichtstbijzijnde getoond" : "") +
+        '; ' + archeologisch.length + ' archeologisch)</span>';
     } catch (err) {
       if (token !== state.monFetchToken) return;
       $("monStatus").innerHTML = '<span class="error-msg">Kon rijksmonumenten niet laden: ' + escapeHtml(err.message) + '</span>';

@@ -3,6 +3,18 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.9 - archeologische monumenten (scheepswrakken) waren onvindbaar
+- Bug gevonden en gefixt: rijksmonumenten werden opgehaald met één query, `ORDER BY afstand
+  LIMIT 400`. In monument-dichte gebieden verdrong "onroerend gebouwd" de veel schaarsere
+  categorie "archeologisch" (o.a. scheepswrakken) volledig uit die top-400 — bevestigd voor
+  "Scheepswrak aanloop Molengat" (nr. 532450, bij Den Helder): 792 gebouwde monumenten lagen
+  dichter bij het dichtstbijzijnde epicentrum (Anna Paulowna) dan dit wrak, dat daardoor nooit
+  verscheen, ongeacht de gekozen straal.
+- Fix: twee aparte queries, één per monumentaard. "Onroerend gebouwd" behoudt de limiet van 400
+  (praktisch nodig, te dicht bevolkt). "Archeologisch" krijgt een limiet van 3.000 (landelijk
+  maar ~1.500 objecten, dus in de praktijk ongelimiteerd). Resultaten worden samengevoegd; de
+  statusregel toont nu beide aantallen apart.
+
 ## v0.8 - kleurenschema herzien
 - Rijksmonument-impactkleuren omgezet naar een stoplicht: rood (ruim binnen effectgebied),
   oranje (net binnen effectgebied), groen (buiten effectgebied) — voorheen groen/grijs, wat
