@@ -3,6 +3,34 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.18.0 - achtergrondpagina
+
+- Nieuwe statische pagina `docs/achtergrond.html`, gelinkt vanuit de footer van de kaart. Geen
+  kaart of JS-logica; hergebruikt de bestaande kleurvariabelen en logo's-rij-stijl.
+- Inhoud: waarom geïnduceerde aardbevingen in Groningen extra impact hebben op rijksmonumenten,
+  waarom juist rijksmonumenten kwetsbaar zijn, het 6-stappen RCE/NCG-werkproces "versterken met
+  behoud van erfgoedwaarde" (~360 monumenten in het programma, een kleinere/andere groep dan de
+  ~1.450 monumenten met geconstateerde schade), en hoe deze kaart zich verhoudt tot de officiële
+  lijst.
+- Sectie "Niet alleen Groningen" toegevoegd na een terechte opmerking dat de kaart zelf ook
+  tektonische bevingen elders in het land toont (bv. Roermond) en dat de pagina dat eerst niet
+  benoemde: de Roermond-beving van 13 april 1992 (M5,8, ~15-18 km diep, Peelrandbreuk, natuurlijk
+  en los van gaswinning — de zwaarste ooit in Nederland gemeten) en de bodemstijging door
+  volgelopen kolenmijnen in Limburg na 1974 (ander mechanisme dan Groningen, afgehandeld als
+  aparte mijnbouwschade) zijn nu met bronvermelding (KNMI, Commissie Mijnbouwschade) opgenomen.
+  Ook expliciet vermeld dat de impactscore niet gekalibreerd is voor diepe tektonische bevingen
+  zoals Roermond.
+- Bronnen: 3 werkende RCE-pagina's op `kennis.cultureelerfgoed.nl` (Thema Aardbevingen in
+  Groningen, Werkproces versterken erfgoed, Lijst rijksmonumenten) plus de KNMI- en
+  Mijnbouwschade-bronnen hierboven. Tekst is een eigen samenvatting, geen letterlijke overname.
+- Een door de gebruiker aangedragen RCE-"story"-link (`rce/-/stories/Aardbevingen-en-Rijksmonumenten`)
+  gaf bij eerste controles wisselend een 404 en een inlogmelding ("Log in to view stories that are
+  not public"). Op verzoek van de gebruiker opnieuw gecontroleerd met een schone browsertab en een
+  losse WebFetch-ophaling: de story bleek toen wél publiek en zonder inloggen bereikbaar. De link
+  is alsnog toegevoegd aan de bronnenlijst, met een toelichting op de pagina zelf over de eerdere
+  inconsistente resultaten.
+- `README.md`: nieuwe bullet in de Features-lijst voor de achtergrondpagina.
+
 ## v0.17.0 - automatisch in-/uitzoomen op de straal
 
 - `drawRadiusCircle()` roept nu `map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20],
