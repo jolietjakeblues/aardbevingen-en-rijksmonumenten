@@ -608,7 +608,7 @@
         (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
         (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Indicatieve impactscore: " + score.toFixed(2) +
           (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
-          (isImpactLowConfidence(depth) ? " — let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
+          (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
         '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
         '<a href="' + m.uri + '" target="_blank" rel="noopener">Linked-data URI</a>' +
         '</div>'
@@ -665,12 +665,12 @@
       '<div class="legend-control-body" style="display:none">' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["geïnduceerde aardbevingen"] + '"></span>Geïnduceerde aardbeving</div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["tektonische aardbevingen"] + '"></span>Tektonische aardbeving</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur — ruim binnen effectgebied</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur — net binnen effectgebied</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur — buiten effectgebied</div>' +
-      '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm — onroerend gebouwd</div>' +
-      '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm — archeologisch (o.a. scheepswrakken)</div>' +
-      '<div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km — trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur - ruim binnen effectgebied</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur - net binnen effectgebied</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten effectgebied</div>' +
+      '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - onroerend gebouwd</div>' +
+      '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - archeologisch</div>' +
+      '<div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km - trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>' +
       '</div>';
   }
 
