@@ -66,11 +66,17 @@ Rh (hypocentrale afstand, km) = √(epicentrale_afstand² + diepte²)
 score = magnitude − 1.646 · log₁₀(Rh) − 1.052
 ```
 
-`score ≥ 0` betekent: binnen het indicatieve effectgebied. Kleurcodering in de kaart:
+`score ≥ 0` betekent: binnen het indicatieve effectgebied. Stoplicht-kleurcodering in de kaart:
 
 - **rood** (`score ≥ 1`): ruim binnen effectgebied
-- **groen** (`0 ≤ score < 1`): net binnen effectgebied
-- **grijs, gedimd** (`score < 0`): buiten effectgebied
+- **oranje** (`0 ≤ score < 1`): net binnen effectgebied
+- **groen** (`score < 0`): buiten effectgebied
+
+Bewust geen grijs/gedimd voor "buiten effectgebied" — dat was op een grijze of blauwe
+ondergrond (bv. rijksmonumenten in zee, zoals scheepswrakken) nauwelijks te onderscheiden van de
+kaartachtergrond. Aardbevingen gebruiken een aparte kleurenschaal (geel = geïnduceerd, blauw =
+tektonisch, zwart = steengroeve-explosie, bruin = overig/onbekend) zodat er geen overlap is met
+de rood/oranje/groen van de monument-impact.
 
 ### Kalibratie (met bronnen)
 

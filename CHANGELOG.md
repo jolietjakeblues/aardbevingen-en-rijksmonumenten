@@ -3,6 +3,16 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.8 - kleurenschema herzien
+- Rijksmonument-impactkleuren omgezet naar een stoplicht: rood (ruim binnen effectgebied),
+  oranje (net binnen effectgebied), groen (buiten effectgebied) — voorheen groen/grijs, wat
+  contra-intuïtief was (groen = "matig" i.p.v. "veilig") en op zee/water nauwelijks zichtbaar.
+- Aardbevingen-categorieën omgezet naar een aparte kleurenschaal zonder overlap met de
+  monument-kleuren: geel (geïnduceerd, was rood), blauw (tektonisch, ongewijzigd), zwart
+  (steengroeve-explosie, was grijs), bruin (overig/onbekend, was grijs).
+- Alle markers (aardbevingen én rijksmonumenten) krijgen nu een vaste donkere rand, los van de
+  vulkleur, voor contrast op elke ondergrond.
+
 ## v0.7 - impactscore herijkt op echte IMG-data
 - Impactscore-coëfficiënten vervangen: niet langer een educated guess, maar een lineaire
   regressie op drie gepubliceerde IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km,
