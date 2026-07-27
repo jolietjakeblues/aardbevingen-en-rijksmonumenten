@@ -1,7 +1,37 @@
-Changelog# Changelog
+# Changelog
 
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
+
+## v0.19.0 - documentatie opgeschoond n.a.v. review
+
+Naar aanleiding van externe feedback over de documentatie (geen functionele wijziging aan de
+applicatie zelf):
+
+- **README.md fors ingekort**: van een bijna volledige ontwikkelgeschiedenis naar een korte
+  gebruikersgerichte pagina (wat doet de kaart, live demo, features, databronnen, beperkingen,
+  lokaal draaien, licentie). Uitgebreide achtergrond verplaatst naar nieuwe bestanden onder
+  `documentation/`.
+- Nieuw: `documentation/DATA.md` (live-gedrag, waarom rechtstreeks KNMI, query-details),
+  `documentation/IMPACTSCORE.md` (formule, kalibratie, beperking), `documentation/DEVELOPMENT.md`
+  (bestandsstructuur, geschiedenis, bekende beperkingen, roadmap, open beslissingen).
+- Verwarrende, verspreide versie-claims in de README (momentopname-bestand op v0.16.0,
+  featurebullet die naar "v0.17.0/1.0" verwees, changelog dat intussen bij v0.18.0 stond)
+  vervangen door één regel bovenaan die naar CHANGELOG.md verwijst als enige bron van waarheid,
+  en die expliciet vermeldt dat dit een ontwikkelversie is, nog geen officiële GitHub Release.
+- Tijdelijke werknotities uit de README verwijderd (de "laatst gepushte commit"-kanttekening bij
+  de live-URL, en de interne notitie over het ontbreken van `achtergrond.html` in het
+  momentopname-bestand - dat laatste staat nu in `DEVELOPMENT.md` als open beslissing i.p.v. als
+  README-ruis).
+- `CHANGELOG.md`: foutieve eerste regel ("Changelog# Changelog") gecorrigeerd naar `# Changelog`.
+- Formulering "Alles is live" vervangen door een preciezere omschrijving: de aardbevings- en
+  monumentgegevens worden live opgehaald, maar de applicatiecode, Leaflet en de achtergrondpagina
+  zijn gewoon statische bestanden - dat werd door "alles" ten onrechte gesuggereerd als ook live.
+- UI-terminologie rond de impactscore aangescherpt zodat hij overal als indicatief/verkennend
+  wordt gepresenteerd, nooit als officiële risico-indeling: legenda-tekst "ruim/net binnen
+  effectgebied" → "ruim/net/buiten binnen indicatie", en een expliciete "verkennende score, geen
+  schadebeoordeling"-zin toegevoegd aan de legenda-hint (naast de popup-tekst, die al
+  "indicatief effectgebied" gebruikte).
 
 ## v0.18.0 - achtergrondpagina
 

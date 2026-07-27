@@ -1,216 +1,61 @@
 # Aardbevingen NL - epicentrum & rijksmonumenten
 
 Interactieve kaart van Nederlandse aardbevingen met een straal-selectie die laat zien welke
-rijksmonumenten binnen die straal liggen, inclusief een indicatieve "impactscore" per monument.
+rijksmonumenten binnen die straal liggen, inclusief een indicatieve, verkennende impactscore per
+monument - geen schadebeoordeling.
 
-Standalone HTML-bestand, geen build-stap, geen servercode, geen API-key nodig.
-Repository: `github.com/jolietjakeblues/aardbevingen-en-rijksmonumenten`
+**Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
-**Live:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
-(GitHub Pages, geverifieerd bereikbaar - HTTP 200). Let op: dit toont de laatst *gepushte*
-commit; lokale wijzigingen die nog niet gecommit/gepusht zijn (zoals de v0.16.0-toevoegingen op
-het moment van schrijven) staan er nog niet op.
+Huidige versie: 0.18.0 (ontwikkelversie, nog geen officiële GitHub Release) - zie
+[CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
 
-## Bestandsstructuur
+Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
 
-- **`docs/index.html`** - de actuele, canonieke versie. Dit is ook het bestand dat GitHub Pages
-  serveert zodra Pages is ingesteld op de map `docs/` (standaardconventie: geen aparte
-  build-/deploy-stap nodig).
-- **`docs/achtergrond.html`** - statische informatiepagina (geen kaart/JS-state) over waarom
-  aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
-  van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
-  versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.16.0.html` - momentopname van `index.html` onder een
-  versienummer, voor wie een specifieke release wil terugvinden zonder door de git-historie te
-  hoeven zoeken. Bevat (nog) geen kopie van `achtergrond.html`, dat is nieuw sinds v0.17.0/1.0.
+## Wat doet de kaart
 
-Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
-`docs/index.html` er een volledige superset van is - geen functionaliteit kwijt, wel twee
-verklarende code-comments teruggezet die tijdens een refactor per ongeluk waren weggevallen.
+Je selecteert een aardbeving (klik op de kaart, of zoek op plaatsnaam) en een straal in
+kilometers. De kaart laat vervolgens zien welke rijksmonumenten binnen die straal liggen, met per
+monument een indicatieve impactscore die aangeeft hoe plausibel het is dat de beving daar
+voelbaar was. Achtergrond over waarom deze combinatie van data relevant is, staat op de aparte
+pagina [`docs/achtergrond.html`](docs/achtergrond.html) (bereikbaar via de link onderaan de
+kaart).
 
-## Wat is live en wat niet
+## Belangrijkste functies
 
-**Alles is live.** Er zit geen ingebakken/embedded dataset in de HTML - bij het openen van de
-pagina en bij elke interactie wordt er in de browser (`fetch()`) rechtstreeks bij de bron
-bevraagd:
+- Epicentrum selecteren via de kaart of via een plaatsnaam-zoekveld met autocomplete.
+- Straal-slider (1-200 km) met automatisch in-/uitzoomen op het geselecteerde gebied.
+- Rijksmonument-popups met naam (indien bekend), oorspronkelijke én huidige functie, monumentaard,
+  link naar het monumentenregister en de linked-data URI.
+- Eigen icoon per monumenttype (huisje voor onroerend gebouwd, schop voor archeologisch) en een
+  rood/oranje/groen indicatie van de impactscore, onafhankelijk van elkaar te combineren.
+- Tijd-animatie met een dubbele slider om een specifiek jarenvenster te kiezen of de opbouw van
+  Groningse seismiciteit chronologisch af te spelen.
+- Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
+- Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
+  plaats van dat de hele pagina faalt.
 
-| Onderdeel | Wanneer opgehaald | Bron |
-|---|---|---|
-| Aardbevingen (alle ~3.750, 1911-heden) | eenmalig bij laden van de pagina | **KNMI**, rechtstreeks (`rdsa.knmi.nl`, CSV) |
-| Rijksmonumenten binnen straal | bij elke selectie/straal-wijziging (gedebounced, 350ms) | RCE CHO linked data, live SPARQL |
-| Kaarttegels | doorlopend tijdens pannen/zoomen | CARTO (extern, CDN) |
-| Leaflet-library | eenmalig bij laden | unpkg CDN |
-
-Er is dus geen "ververs de data"-knop nodig en geen risico op een verouderde snapshot - maar
-het betekent ook dat de pagina niet werkt zonder internetverbinding, en dat de snelheid afhangt
-van de bron-endpoints.
-
-**Waarom rechtstreeks het KNMI en niet (meer) RCE voor de aardbevingen**: RCE's eigen
-aardbevingen-graph bleek zelf een periodieke import van precies dezelfde twee KNMI-endpoints te
-zijn (te zien aan `prov:wasDerivedFrom` op elk event, wijzend naar `rdsa.knmi.nl`). Rechtstreeks
-bij de bron ophalen is dus zowel actueler (geen wachten op RCE's eigen ververscyclus) als
-completer: KNMI's archief gaat terug tot 1911, verder terug dan wat er via RCE beschikbaar bleek.
-Kanttekening: het KNMI kent alleen de categorieën "induced" en "tectonic" - de categorie
-"steengroeve explosie" die in de RCE-versie voorkwam, bestaat niet in deze bron en is dus
-vervallen. Rijksmonumenten blijven wel via RCE lopen; dat is een andere databron met een ander
-doel (cultureel erfgoed, niet seismologie).
-
-Andere KNMI-bronnen zijn overwogen en afgevallen: `dataplatform.knmi.nl/aardbevingen_nederland`
-beperkt zich tot de laatste 100 events (en levert NetCDF, lastig te parsen in de browser zonder
-extra library); `aardbevingen_cijfers` bleek aggregaat-tellingen te zijn, geen coördinaten per
-event.
-
-## Features
-
-- **Epicentrum selecteren**: klik op een aardbeving op de kaart, of typ een plaatsnaam (zoekveld
-  met autocomplete, gevuld uit de toponiemen die al in de aardbevingsdata zitten - geen aparte
-  geocoding-service nodig). Springt naar de meest recente beving bij die plaatsnaam.
-- **Straal-slider** (1–200 km): tekent een cirkel en herberekent statistieken en monumenten live.
-- **Automatisch in-/uitzoomen**: de kaart past zichzelf aan op de straal-cirkel (`fitBounds`),
-  zowel bij het selecteren van een epicentrum als bij het verslepen van de straal-slider — niet
-  meer zelf hoeven te zoomen.
-- **Aardbevingen-popup**: toponiem, datum/tijd, magnitude (ML), diepte, categorie (geïnduceerd /
-  tektonisch - de KNMI-bron kent geen aparte steengroeve-categorie).
-- **Rijksmonumenten-popup**: naam (indien aanwezig), oorspronkelijke functie (vrijwel altijd
-  aanwezig) én huidige functie apart getoond wanneer bekend, monumentaard (archeologisch /
-  onroerend gebouwd), link naar het monumentenregister én de linked-data URI zelf.
-- **Alleen geldige rijksmonumenten**: gefilterd op juridische status = "rijksmonument" (dus niet
-  "voorbeschermd" of "geen rijksmonument").
-- **Icoon per type**: huisje voor "onroerend gebouwd", schop voor "archeologisch" (o.a.
-  scheepswrakken) - vaste pixelgrootte, dus zichtbaar op elk zoomniveau (zie "Bekende
-  beperkingen" voor de bug die dit repareerde).
-- **Impactscore**: per rijksmonument een indicatie of het epicentrum-monument-paar binnen een
-  realistisch "effectgebied" valt - zie hieronder. Kleurcodering (rood/oranje/groen) is
-  onafhankelijk van het type-icoon: elke combinatie is mogelijk.
-- **Tijd-animatie met dubbele slider**: balk onderaan de kaart met twee handvatten (van–tot),
-  zodat je zowel een specifiek jarenvenster kunt kiezen (bv. 1986–2011) als cumulatief vanaf een
-  startjaar kunt afspelen. Afspelen houdt het gekozen startjaar vast en schuift alleen het
-  eindjaar op, om de opbouw van geïnduceerde Groningse seismiciteit te laten zien. Werkt alleen
-  op de kaartweergave - de straal-statistieken en impactscore blijven altijd op de volledige
-  dataset gebaseerd (een animatie is bedoeld om te laten zien, niet om te filteren wat er
-  geanalyseerd wordt). Een plaatsnaam zoeken zet het venster automatisch terug naar "toon alles",
-  zodat het gezochte resultaat altijd zichtbaar is.
-- **Legenda als inklapbare kaart-overlay** (linksonder) in plaats van vaste ruimte in de
-  zijbalk - scheelt aanzienlijk aan verticale ruimte nu de zijbalk meerdere panelen telt.
-- **Bronvermelding**: logo's van RCE en KNMI bovenaan de zijbalk, doorklikbaar naar de officiële
-  sites (Wikimedia Commons, CC0, door de betreffende overheidsdiensten zelf gepubliceerd).
-- **Responsief vanaf 700px**: zijbalk stapelt boven de kaart op smalle schermen i.p.v. ernaast.
-- **Robuuste dataverzoeken**: elk verzoek (KNMI en RCE) heeft een timeout van 20 seconden
-  (`AbortController`); als één van de twee KNMI-categorieën of monumentquery's faalt of te lang
-  duurt, toont de pagina de andere alsnog (`Promise.allSettled`) met een statusmelding welk deel
-  ontbreekt, in plaats van de hele pagina te laten mislukken.
-- **Toegankelijkheid**: verborgen labels bij zoekveld en sliders, `aria-live` op statusregio's
-  zodat schermlezers laadfouten en "geen resultaat"-meldingen meekrijgen, de legenda-header is
-  een echte `<button>` (toetsenbordbedienbaar, `aria-expanded`).
-- **Achtergrondpagina**: een tweede, statische pagina (`docs/achtergrond.html`, bereikbaar via de
-  link onderaan de kaart) met uitleg over waarom aardbevingen en rijksmonumenten samenhangen, hoe
-  het RCE-werkproces voor versterking met erfgoedbehoud werkt, en hoe de kaart zich daartoe
-  verhoudt. Eigen samenvatting op basis van drie geverifieerde RCE-publicaties (zie bronvermelding
-  op de pagina zelf), geen letterlijke overname.
+Volledige featurelijst en changelog per versie: zie [CHANGELOG.md](CHANGELOG.md).
 
 ## Databronnen
 
-- **Aardbevingen:** KNMI, rechtstreeks opgehaald als CSV via `rdsa.knmi.nl`.
-  De categorieën `induced` en `tectonic` worden afzonderlijk bevraagd.
-- **Rijksmonumenten:** RCE Cultureel Erfgoed Open Data, via het CHO
-  SPARQL-endpoint.
-- **Ontologie:** CEO, de Cultureel Erfgoed Ontologie van de Rijksdienst
-  voor het Cultureel Erfgoed.
+De aardbevings- en monumentgegevens worden tijdens het gebruik rechtstreeks bij de bron
+opgehaald. De applicatie bevat geen ingebouwde momentopname van deze datasets.
 
-De gebruikte endpoints ondersteunen CORS. Daardoor kan de browser de gegevens
-rechtstreeks ophalen en is geen eigen backend of proxy nodig.
+- **Aardbevingen:** KNMI, rechtstreeks via `rdsa.knmi.nl` (CSV).
+- **Rijksmonumenten:** RCE Cultureel Erfgoed Open Data, via het CHO SPARQL-endpoint (CEO-ontologie).
 
-## Impactscore
+Waarom rechtstreeks het KNMI, welke bronnen zijn afgewogen, en hoe de rijksmonumenten-query werkt:
+zie [documentation/DATA.md](documentation/DATA.md).
 
-De impactscore is een **vereenvoudigde, illustratieve indicator** - geen gevalideerd schade- of
-risicomodel. Doel: laten zien of een epicentrum-monument-combinatie plausibel binnen een
-realistisch trillingsgebied valt, niet om schade te voorspellen.
+## Beperkingen en disclaimer
 
-### Formule
+De impactscore is een **indicatieve, verkennende score - geen schade- of risicobeoordeling**.
+Formule, kalibratie op drie gepubliceerde IMG-effectgebieden en de belangrijkste beperking (niet
+gevalideerd voor diepe/tektonische bevingen) staan in
+[documentation/IMPACTSCORE.md](documentation/IMPACTSCORE.md).
 
-```
-Rh (hypocentrale afstand, km) = √(epicentrale_afstand² + diepte²)
-score = magnitude − 1.646 · log₁₀(Rh) − 1.052
-```
-
-`score ≥ 0` betekent: binnen het indicatieve effectgebied. Stoplicht-kleurcodering in de kaart:
-
-- **rood** (`score ≥ 1`): ruim binnen effectgebied
-- **oranje** (`0 ≤ score < 1`): net binnen effectgebied
-- **groen** (`score < 0`): buiten effectgebied
-
-Bewust geen grijs/gedimd voor "buiten effectgebied" - dat was op een grijze of blauwe
-ondergrond (bv. rijksmonumenten in zee, zoals scheepswrakken) nauwelijks te onderscheiden van de
-kaartachtergrond. Aardbevingen gebruiken een aparte kleurenschaal (geel = geïnduceerd, blauw =
-tektonisch) zodat er geen overlap is met de rood/oranje/groen van de monument-impact.
-
-### Kalibratie (met bronnen)
-
-De coëfficiënten (1.646 en 1.052) zijn gebaseerd op gepubliceerde gegevens - het zijn de resultaten van een
-lineaire regressie op `log₁₀(Rh)` tegen magnitude, gefit op **drie echte, gepubliceerde
-effectgebieden** van het Instituut Mijnbouwschade Groningen (IMG), allemaal op basis van dezelfde
-methode (trillingssnelheidsdrempel 2 mm/s bij 1% overschrijdingskans, Bommer et al.-methode):
-
-| Beving | Magnitude | Effectgebied | Bron |
-|---|---|---|---|
-| generiek IMG-voorbeeld | M2.7 | 9,5 km | [schadedoormijnbouw.nl - Effectgebied na een nieuwe beving](https://www.schadedoormijnbouw.nl/nieuws/2022/11/effectgebied-na-een-nieuwe-beving) |
-| Wirdum, 8 okt 2012 | M3.1 | 17,5 km | [schadedoormijnbouw.nl](https://www.schadedoormijnbouw.nl/nieuws/2022/11/effectgebied-na-een-nieuwe-beving) |
-| Huizinge, 16 aug 2012 | M3.6 | >35 km | [KNMI - Magnitude beving Huizinge wordt 3,6](https://www.knmi.nl/over-het-knmi/nieuws/magnitude-beving-huizinge-wordt-3-6) / schadedoormijnbouw.nl |
-
-Diepte is voor deze drie punten aangenomen op ~3 km (de gebruikelijke diepte van het
-Groningenveld). De gefitte lijn benadert alle drie punten binnen ±0,01 magnitude.
-
-### Belangrijke beperking
-
-Deze kalibratie is **alleen valide voor ondiepe (≤5 km), geïnduceerde bevingen** zoals in
-Groningen. Getest tegen de zwaarste natuurlijke Nederlandse beving (Roermond, 1992, M5,8, 18 km
-diep - reëel schadegebied ~15–20 km rond Roermond/Maaseik/Heinsberg volgens
-[Wikipedia](https://en.wikipedia.org/wiki/1992_Roermond_earthquake)) blijkt de score op grote
-afstand veel te hoog te blijven: andere bodem, andere diepte, andere attenuatie-eigenschappen dan
-het Groningenveld. Vandaar een expliciete waarschuwing in de popup ("kalibratie minder
-betrouwbaar") zodra de diepte van de geselecteerde beving groter is dan 5 km.
-
-**Dit is en blijft een vuistregel voor verkenning, geen schadebeoordeling.**
-
-## Bekende beperkingen en roadmap
-
-Getest (juli 2026) met de responsive-resize-tool van de browser:
-
-- **Mobiel (375px breed): opgelost sinds v0.16.0.** Een `@media (max-width: 700px)`-breakpoint
-  stapelt de zijbalk (max 45% hoogte) boven de kaart (55%) i.p.v. ernaast. Geverifieerd: geen
-  horizontale overflow meer (`document.body.scrollWidth === window.innerWidth`).
-- **Tablet (768px breed): bruikbaar**, zijbalk en kaart zijn beide zichtbaar, geen overflow.
-- **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
-  geselecteerd - dat kan rommelig ogen bij een dichte cluster. Gepland: niet-geselecteerde
-  bevingen dimmen of filteren zodra er een epicentrum actief is.
-- Rijksmonumenten worden in twee aparte queries opgehaald: "onroerend gebouwd" (gelimiteerd tot
-  400, dichtstbijzijnde eerst - bij een grote straal in een dichte regio zoals Amsterdam kan het
-  werkelijke aantal hoger liggen) en "archeologisch" (limiet 3.000, landelijk maar ~1.500 dus in
-  de praktijk ongelimiteerd). Deze splitsing is bewust: bij één gedeelde LIMIT 400 verdrongen
-  gebouwde monumenten de archeologische categorie systematisch - een scheepswrak op 25 km van een
-  epicentrum verscheen nooit omdat er 792 gebouwde monumenten dichterbij lagen. Bevestigd
-  gerepareerd voor "Scheepswrak aanloop Molengat" (rijksmonumentnr. 532450, bij Den Helder).
-- Naam is bij slechts ~13% van de rijksmonumenten bekend, huidige functie bij ~8% - dit is een
-  eigenschap van de brondata, geen bug (zie ook de code-comments in `docs/index.html`).
-- Afspeelsnelheid van de tijd-animatie staat vast op 400 ms per jaar, nog niet instelbaar.
-- De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
-  timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
-  (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
-
-## Mogelijke uitbreidingen
-
-- Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
-  monument-posities.
-- Caching van monument-queries per (epicentrum, straal)-combinatie.
-- Visuele markering (bv. een kruisje) op de geselecteerde aardbeving-marker zelf, zodat die op de
-  kaart te onderscheiden is van de overige aardbevingen nadat je erop geklikt hebt.
-- Visuele markering op de kaart voor rijksmonumenten die in het officiële RCE-versterkingsprogramma
-  zitten (zie eerdere notitie over de aangeleverde lijst van ~140 monumentnummers) — voor een ander
-  keertje.
-- Archeologische monumenten (schop-icoon) een eigen kleur geven bij "buiten effectgebied" —
-  bruin in plaats van het huidige groen — zodat de kleur niet alleen de impactscore maar ook het
-  type meesignaleert. Uitwerken hoe dit zich verhoudt tot het bestaande rood/oranje/groen-stoplicht
-  bij "in effectgebied", waar de score juist de enige betekenisvolle kleurdimensie is.
+Overige bekende beperkingen (responsiviteit, query-limieten, afhankelijkheid van externe
+diensten) en de roadmap staan in [documentation/DEVELOPMENT.md](documentation/DEVELOPMENT.md).
 
 ## Lokaal draaien
 
@@ -234,8 +79,7 @@ IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
 ## Dank aan
 
 - Het KNMI voor de openbare aardbevingsgegevens.
-- De Rijksdienst voor het Cultureel Erfgoed voor de linked data over
-  rijksmonumenten en de Cultureel Erfgoed Ontologie.
-- Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over
-  effectgebieden.
+- De Rijksdienst voor het Cultureel Erfgoed voor de linked data over rijksmonumenten en de
+  Cultureel Erfgoed Ontologie.
+- Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over effectgebieden.
 - Leaflet en CARTO voor de kaartweergave.
