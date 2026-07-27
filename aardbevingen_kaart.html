@@ -19,7 +19,50 @@
     overflow-y: auto; background:#fff; border-right:1px solid var(--border);
     padding: 16px; box-sizing: border-box;
   }
-  #map { flex: 1 1 auto; }
+  .logos-row { display:flex; align-items:center; gap:18px; margin-bottom:16px; }
+  .logos-row img { height:30px; width:auto; max-width:130px; object-fit:contain; display:block; }
+  #mapPane { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+  #map { flex: 1 1 auto; min-height: 0; }
+  #timebar {
+    flex: 0 0 auto; background: #fff; border-top: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+  }
+  #timebar button {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center;
+  }
+  #timebar button:hover { background: #f5f5f5; }
+  #timeYearLabel { flex: 0 0 auto; font-size: 13px; font-weight: 600; min-width: 78px; text-align:center; }
+  #timeResetBtn { flex: 0 0 auto; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; width: auto; height: auto; border-radius: 0; }
+
+  /* Twee-handvat range-slider: twee overlappende native range-inputs (transparant, alleen de
+     thumb is klikbaar) plus een losse track + fill-balk erachter voor het visuele effect. */
+  .range-slider-wrap { position: relative; flex: 1 1 auto; height: 20px; }
+  .range-track { position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: var(--border); border-radius: 1px; }
+  .range-fill { position: absolute; top: 9px; height: 2px; background: var(--accent); border-radius: 1px; }
+  .range-slider-wrap input[type=range] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0;
+    -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none;
+  }
+  .range-slider-wrap input[type=range]::-webkit-slider-runnable-track { background: transparent; }
+  .range-slider-wrap input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; pointer-events: auto; width: 14px; height: 14px; margin-top: 3px;
+    border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border); cursor: pointer;
+  }
+  .range-slider-wrap input[type=range]::-moz-range-track { background: transparent; border: none; }
+  .range-slider-wrap input[type=range]::-moz-range-thumb {
+    pointer-events: auto; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border); cursor: pointer;
+  }
+  .legend-control {
+    background: #fff; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,.4);
+    font-size: 12px; max-width: 230px;
+  }
+  .legend-control-header {
+    padding: 6px 10px; cursor: pointer; font-weight: 600; color: var(--accent);
+    user-select: none;
+  }
+  .legend-control-body { padding: 0 10px 10px; }
   h1 { font-size: 16px; margin: 0 0 2px; color: var(--accent); }
   .subtitle { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height:1.4; }
   .panel { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0f0f0; }
@@ -51,8 +94,16 @@
 <body>
 <div id="app">
   <div id="sidebar">
+    <div class="logos-row">
+      <a href="https://www.cultureelerfgoed.nl/" target="_blank" rel="noopener" title="Rijksdienst voor het Cultureel Erfgoed">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Rijksdienst_voor_het_Cultureel_Erfgoed_logo.svg" alt="Rijksdienst voor het Cultureel Erfgoed">
+      </a>
+      <a href="https://www.knmi.nl/" target="_blank" rel="noopener" title="KNMI">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Koninklijk_Nederlands_Meteorologisch_Instituut_%28KNMI%29_logo.png" alt="KNMI">
+      </a>
+    </div>
     <h1>Aardbevingen NL</h1>
-    <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Alle data live opgehaald bij RCE linked data en KNMI.</div>
+    <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen live bij het KNMI, rijksmonumenten live bij RCE linked data.</div>
 
     <div class="panel">
       <h2>Zoek op plaats</h2>
@@ -84,27 +135,26 @@
       <div id="monStatus"><span class="placeholder">—</span></div>
     </div>
 
-    <div class="panel">
-      <h2>Legenda</h2>
-      <div class="legend-item"><span class="legend-dot" style="background:#f2c200"></span>Geïnduceerde aardbeving</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#1d70a2"></span>Tektonische aardbeving</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#1a1a1a"></span>Steengroeve explosie</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#8b5e3c"></span>Overig / onbekend</div>
-      <div class="legend-item"><span class="legend-square" style="background:#c0392b"></span>Rijksmonument-kleur - ruim binnen effectgebied</div>
-      <div class="legend-item"><span class="legend-square" style="background:#e67e22"></span>Rijksmonument-kleur - net binnen effectgebied</div>
-      <div class="legend-item"><span class="legend-square" style="background:#2e7d32"></span>Rijksmonument-kleur - buiten effectgebied</div>
-      <div class="legend-item"><span id="legendHouseIcon"></span>Rijksmonument-vorm - onroerend gebouwd</div>
-      <div class="legend-item"><span id="legendSpadeIcon"></span>Rijksmonument-vorm - archeologisch (o.a. scheepswrakken)</div>
-      <div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km — trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>
-    </div>
-
     <footer>
-      Aardbevingen: <a href="https://linkeddata.cultureelerfgoed.nl/graph/aardbevingen" target="_blank" rel="noopener">RCE linked data</a> ·
+      Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
-      Kaart: Leaflet + CARTO. Beide bronnen worden live bevraagd via SPARQL, geen ingebakken snapshot.
+      Kaart: Leaflet + CARTO. Beide bronnen worden live bevraagd, geen ingebakken snapshot.
     </footer>
   </div>
-  <div id="map"></div>
+  <div id="mapPane">
+    <div id="map"></div>
+    <div id="timebar">
+      <button id="timePlayBtn" type="button" title="Afspelen" aria-label="Afspelen">&#9654;</button>
+      <div class="range-slider-wrap">
+        <div class="range-track"></div>
+        <div class="range-fill" id="rangeFill"></div>
+        <input type="range" id="timeSliderFrom" min="0" max="1" value="0">
+        <input type="range" id="timeSliderTo" min="0" max="1" value="1">
+      </div>
+      <span id="timeYearLabel">—</span>
+      <button id="timeResetBtn" type="button">toon alles</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -112,17 +162,16 @@
 (function () {
   "use strict";
 
-  var EQ_ENDPOINT = "https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/aardbevingen/sparql";
-  var EQ_GRAPH = "https://linkeddata.cultureelerfgoed.nl/graph/aardbevingen";
   var MON_ENDPOINT = "https://api.linkeddata.cultureelerfgoed.nl/datasets/rce/cho/services/cho/sparql";
   var MONUMENTENREGISTER_URL = "https://monumentenregister.cultureelerfgoed.nl/monumenten/";
 
   // Aardbevingen en rijksmonument-impact gebruiken elk hun eigen kleurenschaal (geen overlap,
   // bv. niet allebei rood) zodat de twee betekenissen nooit door elkaar lopen op de kaart.
+  // Het KNMI kent alleen "induced" en "tectonic" (geen aparte steengroeve-categorie); DEFAULT_COLOR
+  // is puur een defensieve fallback en zou in de praktijk nooit gebruikt moeten worden.
   var CATEGORY_COLORS = {
     "geïnduceerde aardbevingen": "#f2c200",
-    "tektonische aardbevingen": "#1d70a2",
-    "steengroeve explosie": "#1a1a1a"
+    "tektonische aardbevingen": "#1d70a2"
   };
   var DEFAULT_COLOR = "#8b5e3c";
   var MARKER_STROKE = "#333333";
@@ -158,8 +207,13 @@
     events: [],
     selected: null,      // {lat, lon}
     radiusKm: 25,
-    monFetchToken: 0
+    monFetchToken: 0,
+    timeFrom: null,       // null (samen met timeTo=null) = toon alles; anders: venster [timeFrom, timeTo]
+    timeTo: null,
+    minYear: null,
+    maxYear: null
   };
+  var timePlayTimer = null;
 
   var map, eqLayer, monLayer, radiusCircle;
 
@@ -229,10 +283,21 @@
     return CATEGORY_COLORS[label] || DEFAULT_COLOR;
   }
 
+  function yearOf(dateStr) {
+    return dateStr ? new Date(dateStr).getFullYear() : null;
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  // CEO-functienamen komen soms met een intern codeachtervoegsel, inconsistent met/zonder spatie
+  // ervoor: "Boerderij (M1)", "Boerderij(M1)". Puur cosmetisch bij weergave -- ruwe data blijft
+  // ongewijzigd, dit raakt alleen het label in de popup.
+  function stripParenSuffix(label) {
+    return label ? label.replace(/\s*\([^)]*\)/g, "").trim() : label;
   }
 
   async function sparqlSelect(endpoint, query) {
@@ -243,26 +308,41 @@
     return json.results.bindings;
   }
 
-  function buildEqQuery() {
-    // Aggregatie (SAMPLE/GROUP BY) is nodig omdat een event soms meerdere schema:location-
-    // of taalvarianten heeft; zonder dedupe levert dat dubbele rijen per event op.
-    return 'PREFIX schema: <https://schema.org/>\n' +
-      'PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n' +
-      'PREFIX seismo: <https://linkeddata.cultureelerfgoed.nl/def/seismo#>\n' +
-      'PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n' +
-      'SELECT ?event (SAMPLE(?date) AS ?dateOut) (SAMPLE(?wkt) AS ?wktOut) (SAMPLE(?magVal) AS ?magOut) (SAMPLE(?depthVal) AS ?depthOut) (SAMPLE(?catLabel) AS ?catOut) (SAMPLE(?locName) AS ?locOut) WHERE {\n' +
-      '  GRAPH <' + EQ_GRAPH + '> {\n' +
-      '    ?event a schema:Event ;\n' +
-      '           schema:startDate ?date ;\n' +
-      '           geo:asWKT ?wkt .\n' +
-      '    OPTIONAL { ?event seismo:magnitude ?magNode . ?magNode schema:value ?magVal }\n' +
-      '    OPTIONAL { ?event schema:depth ?depthNode . ?depthNode schema:value ?depthVal }\n' +
-      '    OPTIONAL { ?event schema:category ?catUri . ?catUri skos:prefLabel ?catLabel . FILTER(LANG(?catLabel) = "nl") }\n' +
-      '    OPTIONAL { ?event schema:location ?locUri . ?locUri schema:name ?locName . FILTER(LANG(?locName) = "nl") }\n' +
-      '  }\n' +
-      '}\n' +
-      'GROUP BY ?event\n' +
-      'ORDER BY DESC(?dateOut)';
+  // Live rechtstreeks bij het KNMI, niet via RCE. Gevonden via de prov:wasDerivedFrom-triples op
+  // RCE's eigen aardbevingen-graph, die naar exact deze twee endpoints wijzen -- RCE's dataset
+  // is dus zelf een periodieke import hiervan. CORS bevestigd open (reflecteert elke Origin).
+  // Dekking: 1911-heden (tektonisch) en 1986-heden (geinduceerd), bijgewerkt door het KNMI zelf.
+  // Andere KNMI-bronnen afgewogen en verworpen: dataplatform.knmi.nl/aardbevingen_nederland is
+  // beperkt tot de laatste 100 events (NetCDF); aardbevingen_cijfers zijn aggregaat-tellingen,
+  // geen coordinaten per event.
+  var KNMI_INDUCED_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv";
+  var KNMI_TECTONIC_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=tectonic&format=csv";
+
+  async function fetchKnmiCsv(url) {
+    var res = await fetch(url);
+    if (!res.ok) throw new Error("KNMI-verzoek mislukt (" + res.status + ")");
+    return res.text();
+  }
+
+  // CSV-kolommen: YYMMDD,TIME,LOCATION,LAT,LON,DEPTH,MAG,EVALMODE. LOCATION kan zelf een komma
+  // bevatten (bv. "Oost-, West- en Middelbeers") -- de eerste 2 en laatste 5 velden liggen vast,
+  // alles ertussen is de locatienaam, zo blijft die ene rij toch correct parsen.
+  function parseKnmiCsv(text, category) {
+    var lines = text.split(/\r?\n/).filter(function (l) { return l.trim().length > 0; });
+    lines.shift(); // header
+    return lines.map(function (line) {
+      var f = line.split(",");
+      var ymd = f[0], time = f[1];
+      var lat = parseFloat(f[f.length - 5]);
+      var lon = parseFloat(f[f.length - 4]);
+      var depth = parseFloat(f[f.length - 3]);
+      var mag = parseFloat(f[f.length - 2]);
+      var place = f.slice(2, f.length - 5).join(",");
+      var iso = ymd.length === 8
+        ? ymd.slice(0, 4) + "-" + ymd.slice(4, 6) + "-" + ymd.slice(6, 8) + "T" + time + "Z"
+        : null;
+      return { date: iso, place: place || null, lat: lat, lon: lon, depth: depth, mag: mag, category: category };
+    }).filter(function (e) { return !isNaN(e.lat) && !isNaN(e.lon) && e.date !== null; });
   }
 
   // Concept-URI's geverifieerd tegen de live RCE-dataset (graph instanties-rce).
@@ -321,20 +401,15 @@
   async function loadEarthquakes() {
     $("eqStats").innerHTML = '<span class="loading">Aardbevingen laden…</span>';
     try {
-      var bindings = await sparqlSelect(EQ_ENDPOINT, buildEqQuery());
-      state.events = bindings.map(function (b) {
-        var pt = parseFirstLonLat(b.wktOut.value);
-        return {
-          uri: b.event.value,
-          date: b.dateOut ? b.dateOut.value : null,
-          lat: pt ? pt.lat : null,
-          lon: pt ? pt.lon : null,
-          mag: b.magOut ? parseFloat(b.magOut.value) : null,
-          depth: b.depthOut ? parseFloat(b.depthOut.value) : null,
-          category: b.catOut ? b.catOut.value : null,
-          place: b.locOut ? b.locOut.value : null
-        };
-      }).filter(function (e) { return e.lat !== null && e.lon !== null; });
+      var texts = await Promise.all([fetchKnmiCsv(KNMI_INDUCED_URL), fetchKnmiCsv(KNMI_TECTONIC_URL)]);
+      var induced = parseKnmiCsv(texts[0], "geïnduceerde aardbevingen");
+      var tectonic = parseKnmiCsv(texts[1], "tektonische aardbevingen");
+      state.events = induced.concat(tectonic);
+
+      var years = state.events.map(function (e) { return yearOf(e.date); }).filter(function (y) { return y !== null; });
+      state.minYear = years.length ? Math.min.apply(null, years) : null;
+      state.maxYear = years.length ? Math.max.apply(null, years) : null;
+      initTimeSlider();
 
       renderEarthquakeMarkers();
       populatePlaceList();
@@ -346,7 +421,11 @@
 
   function renderEarthquakeMarkers() {
     eqLayer.clearLayers();
-    state.events.forEach(function (ev) {
+    var visible = state.timeFrom === null ? state.events : state.events.filter(function (ev) {
+      var y = yearOf(ev.date);
+      return y !== null && y >= state.timeFrom && y <= state.timeTo;
+    });
+    visible.forEach(function (ev) {
       var radius = ev.mag !== null ? Math.max(3, ev.mag * 2.2) : 3;
       var marker = L.circleMarker([ev.lat, ev.lon], {
         radius: radius,
@@ -524,8 +603,8 @@
         '<div class="eq-info">' +
         '<b>' + (m.naam ? escapeHtml(m.naam) : "Rijksmonument nr. " + escapeHtml(m.nr)) + '</b><br>' +
         (m.naam ? "Rijksmonument nr. " + escapeHtml(m.nr) + '<br>' : "") +
-        (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(m.functieOorspr) + '<br>' : "") +
-        (m.functieHuidig ? "Huidige functie: " + escapeHtml(m.functieHuidig) + '<br>' : "") +
+        (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
+        (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
         (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
         (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Indicatieve impactscore: " + score.toFixed(2) +
           (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
@@ -557,6 +636,7 @@
         match = state.events.filter(function (ev) { return ev.place && ev.place.toLowerCase().indexOf(q) === 0; })[0];
       }
       if (!match) return;
+      resetTimeFilter(); // zoekresultaat moet altijd zichtbaar zijn, ongeacht animatiepositie
       map.setView([match.lat, match.lon], 12);
       selectEpicenter(match.lat, match.lon, match.mag, match.depth, match.place);
     }
@@ -577,17 +657,148 @@
     });
   }
 
-  function initLegendIcons() {
-    // Legenda-iconen hergebruiken dezelfde functies als de kaart zelf, zodat ze nooit uit de pas
-    // kunnen lopen. Neutrale kleur, want deze twee regels leggen de vorm uit, niet de kleur.
-    $("legendHouseIcon").innerHTML = houseIconSvg(MONUMENT_COLOR_UNKNOWN);
-    $("legendSpadeIcon").innerHTML = spadeIconSvg(MONUMENT_COLOR_UNKNOWN);
+  // Legenda als Leaflet-control op de kaart (i.p.v. vaste ruimte in de zijbalk) -- hergebruikt
+  // dezelfde kleur/icoon-functies als de rest van de kaart, zodat legenda en weergave nooit uit
+  // de pas kunnen lopen. Standaard ingeklapt, klik op de titel om te openen.
+  function buildLegendHtml() {
+    return '<div class="legend-control-header">Legenda ▸</div>' +
+      '<div class="legend-control-body" style="display:none">' +
+      '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["geïnduceerde aardbevingen"] + '"></span>Geïnduceerde aardbeving</div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["tektonische aardbevingen"] + '"></span>Tektonische aardbeving</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur — ruim binnen effectgebied</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur — net binnen effectgebied</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur — buiten effectgebied</div>' +
+      '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm — onroerend gebouwd</div>' +
+      '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm — archeologisch (o.a. scheepswrakken)</div>' +
+      '<div class="hint">"Effectgebied" is gekalibreerd op 3 echte IMG-effectgebieden (Wirdum M3.1→17,5km, Huizinge M3.6→35+km, IMG-voorbeeld M2.7→9,5km — trillingssnelheid 2mm/s). Alleen betrouwbaar voor ondiepe (≤5km) geïnduceerde bevingen; bij diepe/tektonische bevingen is dit een ruwere extrapolatie, geen schadebeoordeling.</div>' +
+      '</div>';
+  }
+
+  var LegendControl = L.Control.extend({
+    options: { position: "bottomleft" },
+    onAdd: function () {
+      var container = L.DomUtil.create("div", "legend-control");
+      container.innerHTML = buildLegendHtml();
+      L.DomEvent.disableClickPropagation(container);
+      var header = container.querySelector(".legend-control-header");
+      var body = container.querySelector(".legend-control-body");
+      header.addEventListener("click", function () {
+        var collapsed = body.style.display === "none";
+        body.style.display = collapsed ? "" : "none";
+        header.textContent = "Legenda " + (collapsed ? "▾" : "▸");
+      });
+      return container;
+    }
+  });
+
+  // Tijd-animatie: toont aardbevingen cumulatief tot en met het gekozen jaar, om de opbouw (en
+  // recente afname) van geinduceerde seismiciteit zichtbaar te maken. Werkt uitsluitend op de
+  // kaartweergave -- de straal-statistieken en impactscore blijven altijd op de volledige, actuele
+  // dataset gebaseerd, want die zijn bedoeld als complete analyse, niet als animatie.
+  function updateTimeLabel() {
+    $("timeYearLabel").textContent = state.timeFrom === null ? "alles" : (state.timeFrom + "–" + state.timeTo);
+  }
+
+  function updateRangeFill() {
+    if (state.minYear === null || state.maxYear === null) return;
+    var span = (state.maxYear - state.minYear) || 1;
+    var from = state.timeFrom === null ? state.minYear : state.timeFrom;
+    var to = state.timeTo === null ? state.maxYear : state.timeTo;
+    var fromPct = ((from - state.minYear) / span) * 100;
+    var toPct = ((to - state.minYear) / span) * 100;
+    var fill = $("rangeFill");
+    fill.style.left = fromPct + "%";
+    fill.style.width = Math.max(0, toPct - fromPct) + "%";
+  }
+
+  function applyTimeRange(from, to) {
+    state.timeFrom = from;
+    state.timeTo = to;
+    updateTimeLabel();
+    updateRangeFill();
+    renderEarthquakeMarkers();
+  }
+
+  function stopTimePlayback() {
+    if (timePlayTimer) { clearInterval(timePlayTimer); timePlayTimer = null; }
+    $("timePlayBtn").innerHTML = "&#9654;";
+    $("timePlayBtn").title = "Afspelen";
+    $("timePlayBtn").setAttribute("aria-label", "Afspelen");
+  }
+
+  // Afspelen houdt de linker (van-)handel vast en schuift de rechter (tot-)handel op tot het
+  // eindjaar -- laat de opbouw zien binnen het gekozen startpunt, i.p.v. een vast venster te
+  // verschuiven door de tijd.
+  function startTimePlayback() {
+    if (state.minYear === null || state.maxYear === null) return;
+    var sliderTo = $("timeSliderTo");
+    var from = state.timeFrom === null ? state.minYear : state.timeFrom;
+    var current = state.timeTo === null || state.timeTo >= state.maxYear ? from : state.timeTo;
+    $("timeSliderFrom").value = from;
+    sliderTo.value = current;
+    applyTimeRange(from, current);
+    $("timePlayBtn").innerHTML = "&#10074;&#10074;";
+    $("timePlayBtn").title = "Pauzeren";
+    $("timePlayBtn").setAttribute("aria-label", "Pauzeren");
+    timePlayTimer = setInterval(function () {
+      current += 1;
+      if (current > state.maxYear) { stopTimePlayback(); return; }
+      sliderTo.value = current;
+      applyTimeRange(from, current);
+    }, 400);
+  }
+
+  function resetTimeFilter() {
+    stopTimePlayback();
+    if (state.minYear !== null) {
+      $("timeSliderFrom").value = state.minYear;
+      $("timeSliderTo").value = state.maxYear;
+    }
+    applyTimeRange(null, null);
+  }
+
+  function initTimeSlider() {
+    if (state.minYear === null || state.maxYear === null) return;
+    var sliderFrom = $("timeSliderFrom");
+    var sliderTo = $("timeSliderTo");
+    sliderFrom.min = sliderTo.min = state.minYear;
+    sliderFrom.max = sliderTo.max = state.maxYear;
+    sliderFrom.value = state.minYear;
+    sliderTo.value = state.maxYear;
+    state.timeFrom = null;
+    state.timeTo = null;
+    updateTimeLabel();
+    updateRangeFill();
+  }
+
+  function initTimeControls() {
+    var sliderFrom = $("timeSliderFrom");
+    var sliderTo = $("timeSliderTo");
+    sliderFrom.addEventListener("input", function () {
+      stopTimePlayback();
+      var from = parseInt(this.value, 10);
+      var to = state.timeTo === null ? state.maxYear : state.timeTo;
+      if (from > to) { to = from; sliderTo.value = to; }
+      applyTimeRange(from, to);
+    });
+    sliderTo.addEventListener("input", function () {
+      stopTimePlayback();
+      var to = parseInt(this.value, 10);
+      var from = state.timeFrom === null ? state.minYear : state.timeFrom;
+      if (to < from) { from = to; sliderFrom.value = from; }
+      applyTimeRange(from, to);
+    });
+    $("timePlayBtn").addEventListener("click", function () {
+      if (timePlayTimer) { stopTimePlayback(); } else { startTimePlayback(); }
+    });
+    $("timeResetBtn").addEventListener("click", resetTimeFilter);
   }
 
   initMap();
+  new LegendControl().addTo(map);
   initSlider();
   initPlaceSearch();
-  initLegendIcons();
+  initTimeControls();
   loadEarthquakes();
 })();
 </script>

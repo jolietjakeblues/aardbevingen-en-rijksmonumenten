@@ -15,14 +15,29 @@ bevraagd:
 
 | Onderdeel | Wanneer opgehaald | Bron |
 |---|---|---|
-| Aardbevingen (alle ~3.700) | eenmalig bij laden van de pagina | RCE linked data, live SPARQL |
+| Aardbevingen (alle ~3.750, 1911-heden) | eenmalig bij laden van de pagina | **KNMI**, rechtstreeks (`rdsa.knmi.nl`, CSV) |
 | Rijksmonumenten binnen straal | bij elke selectie/straal-wijziging (gedebounced, 350ms) | RCE CHO linked data, live SPARQL |
 | Kaarttegels | doorlopend tijdens pannen/zoomen | CARTO (extern, CDN) |
 | Leaflet-library | eenmalig bij laden | unpkg CDN |
 
 Er is dus geen "ververs de data"-knop nodig en geen risico op een verouderde snapshot - maar
 het betekent ook dat de pagina niet werkt zonder internetverbinding, en dat de snelheid afhangt
-van de RCE-endpoints.
+van de bron-endpoints.
+
+**Waarom rechtstreeks het KNMI en niet (meer) RCE voor de aardbevingen**: RCE's eigen
+aardbevingen-graph bleek zelf een periodieke import van precies dezelfde twee KNMI-endpoints te
+zijn (te zien aan `prov:wasDerivedFrom` op elk event, wijzend naar `rdsa.knmi.nl`). Rechtstreeks
+bij de bron ophalen is dus zowel actueler (geen wachten op RCE's eigen ververscyclus) als
+completer: KNMI's archief gaat terug tot 1911, verder terug dan wat er via RCE beschikbaar bleek.
+Kanttekening: het KNMI kent alleen de categorieën "induced" en "tectonic" — de categorie
+"steengroeve explosie" die in de RCE-versie voorkwam, bestaat niet in deze bron en is dus
+vervallen. Rijksmonumenten blijven wel via RCE lopen; dat is een andere databron met een ander
+doel (cultureel erfgoed, niet seismologie).
+
+Andere KNMI-bronnen zijn overwogen en afgevallen: `dataplatform.knmi.nl/aardbevingen_nederland`
+beperkt zich tot de laatste 100 events (en levert NetCDF, lastig te parsen in de browser zonder
+extra library); `aardbevingen_cijfers` bleek aggregaat-tellingen te zijn, geen coördinaten per
+event.
 
 ## Features
 
@@ -31,14 +46,26 @@ van de RCE-endpoints.
   geocoding-service nodig). Springt naar de meest recente beving bij die plaatsnaam.
 - **Straal-slider** (1–200 km): tekent een cirkel en herberekent statistieken en monumenten live.
 - **Aardbevingen-popup**: toponiem, datum/tijd, magnitude (ML), diepte, categorie (geïnduceerd /
-  tektonisch / steengroeve-explosie).
+  tektonisch — de KNMI-bron kent geen aparte steengroeve-categorie).
 - **Rijksmonumenten-popup**: naam (indien aanwezig), oorspronkelijke functie (vrijwel altijd
   aanwezig) én huidige functie apart getoond wanneer bekend, monumentaard (archeologisch /
   onroerend gebouwd), link naar het monumentenregister én de linked-data URI zelf.
 - **Alleen geldige rijksmonumenten**: gefilterd op juridische status = "rijksmonument" (dus niet
   "voorbeschermd" of "geen rijksmonument").
+- **Icoon per type**: huisje voor "onroerend gebouwd", schop voor "archeologisch" (o.a.
+  scheepswrakken) — vaste pixelgrootte, dus zichtbaar op elk zoomniveau (zie "Bekende
+  beperkingen" voor de bug die dit repareerde).
 - **Impactscore**: per rijksmonument een indicatie of het epicentrum-monument-paar binnen een
-  realistisch "effectgebied" valt - zie hieronder.
+  realistisch "effectgebied" valt - zie hieronder. Kleurcodering (rood/oranje/groen) is
+  onafhankelijk van het type-icoon: elke combinatie is mogelijk.
+- **Tijd-animatie**: balk onderaan de kaart met een jaar-slider en afspeelknop. Toont
+  aardbevingen cumulatief tot en met het gekozen jaar, om de opbouw van geïnduceerde Groningse
+  seismiciteit zichtbaar te maken. Werkt alleen op de kaartweergave — de straal-statistieken en
+  impactscore blijven altijd op de volledige dataset gebaseerd (een animatie is bedoeld om te
+  laten zien, niet om te filteren wat er geanalyseerd wordt). Een plaatsnaam zoeken zet de
+  animatie automatisch terug naar "toon alles", zodat het gezochte resultaat altijd zichtbaar is.
+- **Legenda als inklapbare kaart-overlay** (linksonder) in plaats van vaste ruimte in de
+  zijbalk — scheelt aanzienlijk aan verticale ruimte nu de zijbalk meerdere panelen telt.
 
 ## Databronnen
 
@@ -130,11 +157,10 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 
 ## Mogelijke toekomstige toevoegingen
 
-- **Tijd-animatie**: play-knop/slider die bevingen chronologisch laat verschijnen, om de
-  toename (en recente afname) van geïnduceerde Groningse seismiciteit te laten zien.
 - Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
   monument-posities.
 - Caching van monument-queries per (epicentrum, straal)-combinatie.
+- Afspeelsnelheid van de tijd-animatie instelbaar maken (nu vast op 400ms per jaar).
 
 ## Lokaal draaien
 

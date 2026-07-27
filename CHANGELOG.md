@@ -3,6 +3,46 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.14 - functienamen ontdaan van codeachtervoegsel
+- CEO-functienamen zoals "Boerderij (M1)" of "Gemaal(M3)" tonen nu zonder het interne
+  codeachtervoegsel tussen haakjes ("Boerderij", "Gemaal") -- puur cosmetisch bij weergave via
+  een regex (`stripParenSuffix`), de ruwe data blijft ongewijzigd. Werkt op zowel "naam (code)"
+  als "naam(code)" (inconsistente spatiëring in de brondata).
+
+## v0.13 - aardbevingen rechtstreeks live bij het KNMI
+- Aardbevingen komen niet langer via RCE's SPARQL-endpoint, maar rechtstreeks van het KNMI
+  (`rdsa.knmi.nl/abcws/event/query`, CSV, induced + tectonic apart bevraagd). Gevonden via de
+  `prov:wasDerivedFrom`-triples op RCE's eigen aardbevingen-graph, die naar exact deze twee
+  KNMI-endpoints wijzen -- RCE's dataset bleek zelf een periodieke import hiervan.
+- Dekking uitgebreid: 1911-heden (was beperkt tot wat RCE had geïmporteerd). CORS bevestigd open
+  (reflecteert elke Origin). Payload kleiner dan de oude SPARQL-aanpak (~230KB vs. ~2,6MB).
+- CSV-parser afgestemd op een echte edge case in de brondata: minstens één locatienaam bevat zelf
+  een ongequote komma ("Oost-, West- en Middelbeers"), wat een naieve split-op-komma zou breken.
+  Opgelost door de eerste 2 en laatste 5 velden als vast te behandelen en alles ertussen als
+  locatienaam samen te voegen.
+- Categorie "steengroeve explosie" vervallen: het KNMI kent alleen "induced" en "tectonic", RCE
+  had kennelijk een verfijning die niet in deze brondata terugkomt. Legenda en kleurenschaal
+  hierop aangepast (2 categorieën i.p.v. 4).
+- Andere KNMI-bronnen afgewogen en verworpen: `dataplatform.knmi.nl/aardbevingen_nederland`
+  (laatste 100 events, NetCDF) en `aardbevingen_cijfers` (aggregaat-tellingen, geen coördinaten).
+- Rijksmonumenten blijven ongewijzigd via RCE lopen (andere databron, ander doel).
+
+## v0.12 - tijd-animatie + legenda naar kaart-overlay
+- Tijd-animatie toegevoegd: balk onder de kaart met jaar-slider (bereik automatisch op basis van
+  de geladen data, 1911-heden) en afspeelknop. Toont aardbevingen cumulatief tot en met het
+  gekozen jaar. Beïnvloedt alleen `renderEarthquakeMarkers`; straal-statistieken en impactscore
+  blijven altijd op de volledige dataset gebaseerd (bewuste scheiding: animatie is presentatie,
+  geen filter op de analyse).
+- Plaatsnaam zoeken zet de animatie terug naar "toon alles" voordat er genavigeerd wordt, zodat
+  een gezocht resultaat nooit onzichtbaar kan zijn door een actieve tijdfilter.
+- Legenda verplaatst van een vast paneel in de zijbalk naar een inklapbare Leaflet-control
+  linksonder op de kaart zelf (standaard ingeklapt). Zijbalk was met 6 panelen (zoek op plaats,
+  straal, epicentrum, aardbeving-stats, monument-stats, legenda + footer) te vol geworden; dit
+  scheelt het meeste omdat de legenda inmiddels 9 regels + hint-tekst besloeg. Maakt ook meteen
+  ruimte voor de nieuwe tijdbalk zonder dat de zijbalk nog voller wordt.
+- Layout omgezet naar geneste flexbox (`#mapPane` met `#map` + `#timebar` in kolom) om de
+  tijdbalk onder de kaart te passen zonder de bestaande sidebar/map-verhouding te breken.
+
 ## v0.11 - iconen naar type: huisje vs. schop
 - Rijksmonument-markers tonen nu een vorm naar `monumentaard`: huisje voor "onroerend gebouwd",
   schop voor "archeologisch" (o.a. scheepswrakken). Kleur (rood/oranje/groen) blijft de
