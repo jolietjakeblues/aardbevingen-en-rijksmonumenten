@@ -3,6 +3,26 @@ Changelog# Changelog
 Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende iteraties op een
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde.
 
+## v0.11 - iconen naar type: huisje vs. schop
+- Rijksmonument-markers tonen nu een vorm naar `monumentaard`: huisje voor "onroerend gebouwd",
+  schop voor "archeologisch" (o.a. scheepswrakken). Kleur (rood/oranje/groen) blijft de
+  effectgebied-score aangeven -- vorm en kleur zijn onafhankelijke dimensies.
+- Type wordt direct meegegeven vanuit de query-batch (gebouwd/archeologisch zijn al aparte
+  queries sinds v0.9) in plaats van achteraf op de `aardLabel`-tekst te matchen.
+- Legenda-iconen hergebruiken dezelfde SVG-functies als de kaart, zodat ze nooit kunnen
+  afwijken van wat er daadwerkelijk getekend wordt.
+
+## v0.10 - monument-markers onzichtbaar bij uitgezoomde weergave
+- Tweede, onafhankelijke bug rond hetzelfde scheepswrak gevonden: nadat v0.9 het wrak wél in de
+  resultaten kreeg (bij straal ≥57 km), bleef het marker onzichtbaar op de kaart zelf.
+- Oorzaak: monumenten werden getekend met `L.rectangle` op een vaste breedte in graden (~90 m).
+  Bij een breed uitgezoomde weergave (straal 60 km in beeld) krimpt dat tot onder de 1 pixel —
+  bevestigd met 265 monument-elementen die een lege bounding box hadden. De aardbeving-markers
+  hadden dit probleem niet, want die gebruiken `L.circleMarker` met een vaste pixel-straal.
+- Fix: monumenten getekend als `L.marker` met een `divIcon` van vaste pixelgrootte (10×10px) —
+  zoom-onafhankelijk, net als de aardbevingen. Geverifieerd: het scheepswrak (nr. 532450) is nu
+  zichtbaar op 60 km straal.
+
 ## v0.9 - archeologische monumenten (scheepswrakken) waren onvindbaar
 - Bug gevonden en gefixt: rijksmonumenten werden opgehaald met één query, `ORDER BY afstand
   LIMIT 400`. In monument-dichte gebieden verdrong "onroerend gebouwd" de veel schaarsere
