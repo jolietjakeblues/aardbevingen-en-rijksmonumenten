@@ -202,6 +202,15 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
   monument-posities.
 - Caching van monument-queries per (epicentrum, straal)-combinatie.
+- Visuele markering (bv. een kruisje) op de geselecteerde aardbeving-marker zelf, zodat die op de
+  kaart te onderscheiden is van de overige aardbevingen nadat je erop geklikt hebt.
+- Visuele markering op de kaart voor rijksmonumenten die in het officiële RCE-versterkingsprogramma
+  zitten (zie eerdere notitie over de aangeleverde lijst van ~140 monumentnummers) — voor een ander
+  keertje.
+- Archeologische monumenten (schop-icoon) een eigen kleur geven bij "buiten effectgebied" —
+  bruin in plaats van het huidige groen — zodat de kleur niet alleen de impactscore maar ook het
+  type meesignaleert. Uitwerken hoe dit zich verhoudt tot het bestaande rood/oranje/groen-stoplicht
+  bij "in effectgebied", waar de score juist de enige betekenisvolle kleurdimensie is.
 
 ## Lokaal draaien
 
