@@ -4,6 +4,17 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.19.1 - ingebouwde uitleg + versterkingsprogramma-badge
+
+Naar aanleiding van de roadmap-review twee punten daadwerkelijk gebouwd (i.p.v. alleen gepland):
+een knop "Hoe werkt deze kaart?" naast de titel opent een uitklapblok met de drie gebruiksstappen;
+diezelfde tekst dient nu ook als lege-starttoestand van het "Geselecteerd epicentrum"-paneel; en
+een info-icoon (ⓘ) staat bij "Impactindicatie" in zowel de legenda als de popup. Daarnaast een
+paarse stippelring toegevoegd rond rijksmonumenten die voorkomen op de aangeleverde lijst van 140
+nummers uit het officiële RCE-versterkingsprogramma (optie "puur informatief", geen filter) - een
+extra popup-regel maakt dit ook expliciet. Versionering: snapshot-bestanden bijgewerkt naar
+`_v0.19.1`.
+
 ## v0.19.0 - documentatie opgeschoond, KNMI-betrouwbaarheidsfix, achtergrondpagina aangevuld
 
 README fors ingekort en gesplitst naar `documentation/DATA.md`, `IMPACTSCORE.md` en

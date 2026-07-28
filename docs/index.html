@@ -64,7 +64,22 @@
   }
   .legend-control-header:focus-visible { outline: 2px solid #1a5276; outline-offset: 2px; }
   .legend-control-body { padding: 0 10px 10px; }
-  h1 { font-size: 16px; margin: 0 0 2px; color: var(--accent); }
+  h1 { font-size: 16px; margin: 0; color: var(--accent); }
+  .title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+  .help-toggle {
+    flex: 0 0 auto; font-size: 11px; color: #1a5276; background: none; border: 1px solid var(--border);
+    border-radius: 12px; padding: 3px 10px; cursor: pointer; font-family: inherit;
+  }
+  .help-toggle:hover { background: #f5f5f5; }
+  .help-toggle:focus-visible { outline: 2px solid #1a5276; outline-offset: 2px; }
+  .help-body { font-size: 12.5px; line-height: 1.5; margin: 8px 0 14px; padding: 10px 12px; background: #f7f9fa; border-radius: 6px; }
+  .help-body ol { margin: 0; padding-left: 18px; }
+  .help-body li { margin-bottom: 4px; }
+  .empty-state-steps { margin: 0; padding-left: 18px; font-size: 13px; color: #555; line-height: 1.5; }
+  .empty-state-steps li { margin-bottom: 4px; }
+  .info-icon {
+    display: inline-block; font-size: 11px; color: var(--muted); cursor: help; margin-left: 2px;
+  }
   .subtitle { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height:1.4; }
   .panel { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0f0f0; }
   .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
@@ -119,8 +134,19 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Koninklijk_Nederlands_Meteorologisch_Instituut_%28KNMI%29_logo.png" alt="KNMI">
       </a>
     </div>
-    <h1>Aardbevingen NL</h1>
+    <div class="title-row">
+      <h1>Aardbevingen NL</h1>
+      <button type="button" id="helpToggle" class="help-toggle" aria-expanded="false" aria-controls="helpBody">Hoe werkt deze kaart?</button>
+    </div>
     <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen rechtstreeks van het KNMI, rijksmonumenten via linked data van de RCE.</div>
+    <div id="helpBody" class="help-body" style="display:none">
+      <ol>
+        <li>Selecteer een aardbeving op de kaart, of zoek op plaatsnaam.</li>
+        <li>Kies een zoekstraal in kilometers.</li>
+        <li>Bekijk de rijksmonumenten binnen dat gebied - de kleur is een verkennende
+          impactindicatie, geen schadebeoordeling.</li>
+      </ol>
+    </div>
 
     <div class="panel">
       <h2>Zoek op plaats</h2>
@@ -142,7 +168,14 @@
 
     <div class="panel">
       <h2>Geselecteerd epicentrum</h2>
-      <div id="selectedInfo"><span class="placeholder">Klik op een aardbeving op de kaart.</span></div>
+      <div id="selectedInfo">
+        <ol class="empty-state-steps">
+          <li>Selecteer een aardbeving op de kaart, of zoek op plaatsnaam.</li>
+          <li>Kies een zoekstraal in kilometers.</li>
+          <li>Bekijk de rijksmonumenten binnen dat gebied - de kleur is een verkennende
+            impactindicatie, geen schadebeoordeling.</li>
+        </ol>
+      </div>
     </div>
 
     <div class="panel">
@@ -160,7 +193,7 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.19.0
+      Applicatieversie 0.19.1
     </footer>
   </div>
   <div id="mapPane">
@@ -223,9 +256,45 @@
       '</svg>';
   }
 
-  function monumentIconSvg(type, color) {
-    return type === "archeologisch" ? spadeIconSvg(color) : houseIconSvg(color);
+  // Paars, stippellijn-ring rond het icoon: puur informatief, los van de rood/oranje/groen-
+  // impactindicatie en de geel/blauw-aardbevingscategorieen (geen van beide is paars), voor
+  // rijksmonumenten die al in het officiele RCE-versterkingsprogramma zitten (optie A: laten zien
+  // hoe de exploratieve straal-selectie van deze kaart zich verhoudt tot die vaste, beoordeelde lijst).
+  var VERSTERKING_RING_COLOR = "#8e44ad";
+  var VERSTERKING_RING_MARGIN = 8; // extra px rondom het bestaande 16px-icoon
+
+  function monumentIconSvg(type, color, inVersterking) {
+    var inner = type === "archeologisch" ? spadeIconSvg(color) : houseIconSvg(color);
+    if (!inVersterking) return inner;
+    var ringPx = MONUMENT_ICON_PX + VERSTERKING_RING_MARGIN;
+    var half = VERSTERKING_RING_MARGIN / 2;
+    return '<div style="position:relative;width:' + ringPx + 'px;height:' + ringPx + 'px;">' +
+      '<svg width="' + ringPx + '" height="' + ringPx + '" viewBox="0 0 ' + ringPx + ' ' + ringPx + '" style="position:absolute;top:0;left:0;">' +
+      '<circle cx="' + (ringPx / 2) + '" cy="' + (ringPx / 2) + '" r="' + (ringPx / 2 - 1.5) + '" fill="none" stroke="' + VERSTERKING_RING_COLOR + '" stroke-width="2" stroke-dasharray="3 2"/>' +
+      '</svg>' +
+      '<div style="position:absolute;top:' + half + 'px;left:' + half + 'px;">' + inner + '</div>' +
+      '</div>';
   }
+
+  // Rijksmonumentnummers uit de officiele RCE-versterkingslijst (kennis.cultureelerfgoed.nl,
+  // "Aardbevingen - Lijst rijksmonumenten"), door de gebruiker aangeleverd. Snapshot, geen live
+  // koppeling met die pagina -- kan achterlopen als de officiele lijst wijzigt.
+  var VERSTERKINGSPROGRAMMA_NRS = new Set([
+    "40294", "40295", "517382", "40298", "509407", "8214", "8224", "8253", "8255", "8228",
+    "8226", "8229", "8230", "8242", "8227", "8262", "509404", "8245", "8247", "8578",
+    "8728", "9465", "35005", "38271", "30918", "12315", "12328", "8582", "18752", "8871",
+    "14548", "40300", "18761", "23460", "15547", "15553", "9780", "528913", "517357", "517377",
+    "517399", "9469", "484088", "33807", "33809", "33810", "12325", "9474", "29897", "23456",
+    "33811", "9479", "18755", "24000", "40301", "40302", "517383", "9784", "26265", "517391",
+    "517355", "517354", "9480", "8252", "28421", "12326", "24004", "18758", "29894", "29921",
+    "31406", "35867", "33079", "33078", "30560", "522098", "31612", "18760", "41089", "8731",
+    "31395", "21321", "21322", "40304", "15575", "29923", "513602", "14557", "31413", "8588",
+    "22269", "33077", "33816", "33822", "513604", "9789", "33805", "33800", "513589", "8256",
+    "9483", "34504", "23464", "9774", "9779", "9788", "35003", "9791", "515513", "8589",
+    "21303", "21315", "35863", "35910", "35869", "35007", "38266", "24025", "34513", "34515",
+    "14567", "29907", "29908", "39042", "39030", "26270", "26271", "515520", "353775", "35008",
+    "9798", "23471", "515326", "40309", "40306", "40312", "31626", "41079", "18224", "24027"
+  ]);
 
   var state = {
     events: [],
@@ -561,9 +630,17 @@
     map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20], maxZoom: 16 });
   }
 
+  var EMPTY_STATE_STEPS_HTML =
+    '<ol class="empty-state-steps">' +
+    '<li>Selecteer een aardbeving op de kaart, of zoek op plaatsnaam.</li>' +
+    '<li>Kies een zoekstraal in kilometers.</li>' +
+    '<li>Bekijk de rijksmonumenten binnen dat gebied - de kleur is een verkennende ' +
+    'impactindicatie, geen schadebeoordeling.</li>' +
+    '</ol>';
+
   function renderSelectedInfo() {
     if (!state.selected) {
-      $("selectedInfo").innerHTML = '<span class="placeholder">Klik op een aardbeving op de kaart.</span>';
+      $("selectedInfo").innerHTML = EMPTY_STATE_STEPS_HTML;
       return;
     }
     $("selectedInfo").innerHTML =
@@ -686,13 +763,17 @@
     monuments.forEach(function (m) {
       var score = (mag !== null && m.distKm !== null) ? impactScore(mag, depth, m.distKm) : null;
       var color = impactColor(score);
+      var inVersterking = VERSTERKINGSPROGRAMMA_NRS.has(m.nr);
       // divIcon i.p.v. L.rectangle: vaste pixelgrootte (net als de aardbeving-cirkels), zodat het
-      // icoon ook bij uitgezoomde weergaven zichtbaar blijft in plaats van te verdwijnen.
+      // icoon ook bij uitgezoomde weergaven zichtbaar blijft in plaats van te verdwijnen. Bij
+      // inVersterking groeit de iconSize mee met de extra ring (zie monumentIconSvg) -- één
+      // marker/icoon, geen los ring-element, om click-volgorde-problemen te vermijden.
+      var px = inVersterking ? MONUMENT_ICON_PX + VERSTERKING_RING_MARGIN : MONUMENT_ICON_PX;
       var icon = L.divIcon({
         className: "",
-        html: monumentIconSvg(m.type, color),
-        iconSize: [MONUMENT_ICON_PX, MONUMENT_ICON_PX],
-        iconAnchor: [MONUMENT_ICON_PX / 2, MONUMENT_ICON_PX / 2]
+        html: monumentIconSvg(m.type, color, inVersterking),
+        iconSize: [px, px],
+        iconAnchor: [px / 2, px / 2]
       });
       var rect = L.marker([m.lat, m.lon], { icon: icon });
       rect.bindPopup(
@@ -702,7 +783,8 @@
         (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
         (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
         (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
-        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Impactindicatie: " + score.toFixed(1) +
+        (inVersterking ? '<span style="color:' + VERSTERKING_RING_COLOR + '">&#9679; In het officiële RCE-versterkingsprogramma</span><br>' : "") +
+        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + ' km<br>Impactindicatie <span class="info-icon" title="Verkennende indicatie, geen schadebeoordeling.">ⓘ</span>: ' + score.toFixed(1) +
           (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
           (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
         '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
@@ -787,7 +869,8 @@
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten indicatie</div>' +
       '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - onroerend gebouwd</div>' +
       '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - archeologisch</div>' +
-      '<div class="hint">Impactindicatie: verkennend, geen schadebeoordeling. Gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km (trillingssnelheid 2 mm/s). Alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte - bij diepe of tektonische bevingen is dit een ruwe extrapolatie.</div>' +
+      '<div class="legend-item">' + monumentIconSvg("gebouwd", MONUMENT_COLOR_UNKNOWN, true) + '&nbsp;Paarse stippelring - zit in het officiële RCE-versterkingsprogramma</div>' +
+      '<div class="hint">Impactindicatie <span class="info-icon" title="Verkennende indicatie, geen schadebeoordeling.">ⓘ</span>: verkennend, geen schadebeoordeling. Gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km (trillingssnelheid 2 mm/s). Alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte - bij diepe of tektonische bevingen is dit een ruwe extrapolatie.</div>' +
       '</div>';
   }
 
@@ -912,11 +995,22 @@
     $("timeResetBtn").addEventListener("click", resetTimeFilter);
   }
 
+  function initHelpToggle() {
+    var btn = $("helpToggle");
+    var body = $("helpBody");
+    btn.addEventListener("click", function () {
+      var open = body.style.display !== "none";
+      body.style.display = open ? "none" : "block";
+      btn.setAttribute("aria-expanded", String(!open));
+    });
+  }
+
   initMap();
   new LegendControl().addTo(map);
   initSlider();
   initPlaceSearch();
   initTimeControls();
+  initHelpToggle();
   loadEarthquakes();
 })();
 </script>

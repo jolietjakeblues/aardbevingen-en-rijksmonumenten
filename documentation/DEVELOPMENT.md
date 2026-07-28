@@ -9,12 +9,11 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.19.0.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.0.html`
+- `aardbevingen_en_rijksmonumenten_v0.19.1.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.1.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
-  terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0: het vorige,
-  ongenummerde bestand (`aardbevingen_en_rijksmonumenten.html`, inhoud nog op v0.16.0) is
-  vervangen door dit bijgewerkte, volledige paar.
+  terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
+  ongenummerde bestand met inhoud op v0.16.0 verving) en sindsdien meegewerkt per versie.
 
 Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
 `docs/index.html` er een volledige superset van is - geen functionaliteit kwijt, wel twee
@@ -70,35 +69,27 @@ wordt:
    lijst zichtbare bevingen; bij een actieve selectie kunnen de overige markers een lagere
    `fillOpacity`/`opacity` krijgen (bv. 0,15) terwijl de geselecteerde beving z'n volle kleur
    behoudt - geen nieuwe marker of icoon nodig, alleen een opacity-tak in de render-functie.
-5. **Korte, niet-verplichte uitleg toevoegen** - uitgewerkt voorstel:
-   - Een knop **"Hoe werkt deze kaart?"** naast de titel in de zijbalk, die een
-     `<details>`/uitklapblok opent (geen modal/popup - blijft naast de rest van de UI staan,
-     sluit zichzelf niet geforceerd).
-   - Inhoud, drie stappen: "1. Selecteer een aardbeving op de kaart of zoek op plaatsnaam. 2. Kies
-     een straal. 3. Bekijk de rijksmonumenten binnen dat gebied - de kleur is een verkennende
-     impactindicatie, geen schadebeoordeling."
-   - Een lege-starttoestand: zolang er nog geen epicentrum gekozen is, toont het
-     "GESELECTEERD EPICENTRUM"-paneel dezelfde drie stappen in plaats van de huidige neutrale
-     "Klik op een aardbeving op de kaart." - hergebruikt dus dezelfde tekst, geen aparte component.
-   - Een klein info-icoon (bv. "ⓘ") naast "Impactindicatie" in de legenda-hint en/of popup, met
-     een `title`-attribuut of kort tooltipje dat naar dezelfde uitleg verwijst - voor wie de
-     uitklaptekst gemist heeft.
-   - Bewust geen verplichte popup bij het laden van de pagina.
+5. ~~**Korte, niet-verplichte uitleg toevoegen**~~ - **gedaan** (v0.19.0): een knop
+   "Hoe werkt deze kaart?" naast de titel opent een uitklapblok (`#helpBody`, geen modal) met de
+   drie stappen; het "Geselecteerd epicentrum"-paneel toont dezelfde drie stappen als
+   lege-starttoestand (`EMPTY_STATE_STEPS_HTML`, hergebruikt in zowel de statische HTML als
+   `renderSelectedInfo()`); en een info-icoon (ⓘ, met `title`-tooltip) staat nu naast
+   "Impactindicatie" in zowel de legenda-hint als de monument-popup. Bewust geen verplichte popup
+   bij het laden. Live geverifieerd, geen console-errors.
 6. **Cross-browser en mobiel testen**: Chrome, Firefox, Safari en een echt mobiel toestel.
 7. **Kleurenblindheid-check** op het rood/oranje/groen-stoplicht.
 
 ## Mogelijke uitbreidingen (na v0.20.0)
 
-- Visuele markering op de kaart voor rijksmonumenten die in het officiële RCE-versterkingsprogramma
-  zitten. Er is al een aangeleverde lijst van ~140 monumentnummers uit die officiële lijst;
-  `ceo:rijksmonumentnummer` is direct bevraagbaar in de RCE-linked-data (geverifieerd live), dus
-  dit is technisch haalbaar zonder de namen/adressen zelf te hoeven opslaan - alleen de nummers.
-  Open vraag, nog te beantwoorden voordat dit gebouwd wordt: wat levert dit de gebruiker concreet
-  op? Opties: (a) puur informatief - een extra badge/rand die toont "dit monument zit al in het
-  beoordeelde versterkingsprogramma", zodat de gebruiker de exploratieve straal-selectie van deze
-  kaart kan vergelijken met de officiële, definitieve lijst; (b) een filter om ALLEEN de
-  versterkingsprogramma-monumenten te tonen; (c) beide. Zonder een concreet antwoord hierop is dit
-  feature nog te vaag om in te plannen.
+- ~~Visuele markering voor rijksmonumenten in het officiële RCE-versterkingsprogramma~~ -
+  **gedaan** (v0.19.0), optie (a) puur informatief gekozen (niet een filter): monumenten waarvan
+  het rijksmonumentnummer voorkomt in `VERSTERKINGSPROGRAMMA_NRS` (de aangeleverde lijst van 140
+  nummers) krijgen een paarse stippelring rond het icoon (los van de rood/oranje/groen-
+  impactindicatie) plus een regel in de popup ("In het officiële RCE-versterkingsprogramma").
+  Puur ter vergelijking van de exploratieve straal-selectie met de officiële, beoordeelde lijst -
+  geen filter. Live geverifieerd op rijksmonument nr. 26265 (Petrus en Pauluskerk, Loppersum).
+  Kanttekening: dit is een snapshot van de door de gebruiker aangeleverde lijst, geen live
+  koppeling - kan achterlopen als de officiële lijst wijzigt.
 
 **Bewust niet opgepakt (besloten deze sessie):**
 - Polygon-centroid i.p.v. het eerste WKT-coördinatenpaar: die precisie is niet nodig gebleken.
