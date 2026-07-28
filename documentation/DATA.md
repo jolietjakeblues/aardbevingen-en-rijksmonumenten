@@ -18,6 +18,18 @@ brondata zelf - maar de applicatiecode (HTML/CSS/JS), de Leaflet-library en de a
 zijn wel gewoon statische bestanden, geen live diensten. De pagina werkt bovendien niet zonder
 internetverbinding, en de snelheid hangt af van de bron-endpoints.
 
+### Bekende KNMI-eigenaardigheid: koude-cache-vertraging
+
+Op meerdere apparaten leken de geïnduceerde aardbevingen soms pas na een handmatige refresh te
+verschijnen, terwijl de tektonische wel meteen toonden. Gemeten met herhaalde `curl`-verzoeken
+bleek de oorzaak bij het KNMI zelf te liggen: het `eventtype=induced`-endpoint kost bij een koude
+cache ~15,5s om te antwoorden, tegen ~0,8s zodra de server het net gecached heeft; het
+`eventtype=tectonic`-endpoint toont hetzelfde patroon maar minder uitgesproken (~7,2s koud, ~0,9s
+warm). Op een trager netwerk kon die koude start het toenmalige timeout van 20s overschrijden.
+Opgelost door de timeout te verruimen naar 35s en één automatische herkansing toe te voegen na een
+korte pauze (`KNMI_TIMEOUT_MS`, `KNMI_RETRY_DELAY_MS` in `docs/index.html`), zodat een handmatige
+refresh niet meer nodig zou moeten zijn.
+
 ## Waarom rechtstreeks het KNMI en niet (meer) RCE voor de aardbevingen
 
 RCE's eigen aardbevingen-graph bleek zelf een periodieke import van precies dezelfde twee

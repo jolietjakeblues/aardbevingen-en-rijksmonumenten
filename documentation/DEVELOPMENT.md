@@ -30,32 +30,50 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
   geselecteerd - dat kan rommelig ogen bij een dichte cluster. Gepland: niet-geselecteerde
   bevingen dimmen of filteren zodra er een epicentrum actief is.
-- Afspeelsnelheid van de tijd-animatie staat vast op 400 ms per jaar, nog niet instelbaar.
 - De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
   timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
   (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
+- Alleen getest in een Chromium-gebaseerde browser (preview-omgeving); Firefox, Safari en een
+  echt mobiel toestel nog niet expliciet geverifieerd.
 - Kleurenblindheid-check op het rood/oranje/groen-stoplicht is nog niet gedaan.
-- Alleen getest in een Chromium-gebaseerde browser (preview-omgeving); Firefox/Safari niet
-  expliciet geverifieerd.
 
 Zie ook [DATA.md](DATA.md) voor de dataspecifieke beperkingen (query-limieten, veldvulling).
 
-## Mogelijke uitbreidingen
+## Roadmap naar v0.20.0 (beoogde eerste publieke release)
 
-- Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
-  monument-posities.
-- Caching van monument-queries per (epicentrum, straal)-combinatie.
-- Visuele markering (bv. een kruisje) op de geselecteerde aardbeving-marker zelf, zodat die op de
-  kaart te onderscheiden is van de overige aardbevingen nadat je erop geklikt hebt.
+Checklist die eerst afgerond wordt voordat v0.20.0 als eerste officiële publieke release getagd
+wordt:
+
+1. **Validatie van de impactindicatie** - blijft het grootste inhoudelijke risico. De indicatie
+   is gekalibreerd op een beperkt aantal gepubliceerde effectgebieden, vooral bedoeld voor
+   ondiepe, geïnduceerde bevingen; voor diepe of tektonische bevingen blijft het een
+   extrapolatie. Aanvullende validatie is nodig voordat de methode breder wordt toegepast.
+2. **Hernoem "impactscore" naar "impactindicatie"** door de hele interface en documentatie -
+   klinkt minder absoluut, sluit beter aan bij het indicatieve, verkennende karakter.
+3. **Numerieke schijnprecisie heroverwegen** - een kaal getal als "0,42" suggereert meer precisie
+   dan de methode kan waarmaken; overwegen minder decimalen te tonen of een kwalitatief label
+   i.p.v. het rauwe getal.
+4. **Korte, niet-verplichte uitleg toevoegen** - gebruikers moeten drie dingen begrijpen (een
+   aardbeving selecteren, een zoekstraal kiezen, de impactindicatie niet als schadevoorspelling
+   lezen). Geen verplichte popup (irriteert snel); wel bijvoorbeeld een knop "Hoe werkt deze
+   kaart?", een kort uitklapbaar informatieblok, een lege-starttoestand met de drie stappen, en
+   een info-icoon bij "impactindicatie". Voorbeeldtekst: *"Selecteer een aardbeving, kies een
+   straal en bekijk de rijksmonumenten binnen dat gebied. De kleur bij een monument is een
+   verkennende indicatie en geen schadebeoordeling."*
+5. **Geselecteerde beving duidelijk markeren** op de kaart, zodat die herkenbaar blijft tussen de
+   andere markers (vorm nog open - kruisje is één optie).
+6. **Cross-browser en mobiel testen**: Chrome, Firefox, Safari en een echt mobiel toestel.
+7. **Kleurenblindheid-check** op het rood/oranje/groen-stoplicht.
+
+## Mogelijke uitbreidingen (na v0.20.0)
+
 - Visuele markering op de kaart voor rijksmonumenten die in het officiële RCE-versterkingsprogramma
   zitten. Er is al een aangeleverde lijst van ~140 monumentnummers uit die officiële lijst;
   `ceo:rijksmonumentnummer` is direct bevraagbaar in de RCE-linked-data (geverifieerd live), dus
   dit is technisch haalbaar zonder de namen/adressen zelf te hoeven opslaan - alleen de nummers.
-  Voor een ander keertje.
-- Archeologische monumenten (schop-icoon) een eigen kleur geven bij "buiten indicatie" - bruin in
-  plaats van het huidige groen - zodat de kleur niet alleen de impactscore maar ook het type
-  meesignaleert. Uitwerken hoe dit zich verhoudt tot het bestaande rood/oranje/groen-stoplicht bij
-  "in indicatie", waar de score juist de enige betekenisvolle kleurdimensie is.
+- Polygon-centroid berekenen in plaats van het eerste WKT-coördinatenpaar, voor nauwkeurigere
+  monument-posities.
+- Caching van monument-queries per (epicentrum, straal)-combinatie.
 
 ## Open beslissingen
 

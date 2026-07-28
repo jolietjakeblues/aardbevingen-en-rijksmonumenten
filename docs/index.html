@@ -358,10 +358,33 @@
   var KNMI_INDUCED_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv";
   var KNMI_TECTONIC_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=tectonic&format=csv";
 
+  // Gemeten (curl, drie herhalingen): het induced-endpoint kost bij een "koude" cache ~15,5s om
+  // te antwoorden, tegen ~0,8s zodra de KNMI-server 'm net gecached heeft; het tectonic-endpoint
+  // toont hetzelfde patroon maar minder uitgesproken (~7,2s koud, ~0,9s warm). Op een trager
+  // netwerk/toestel kan die koude start het 20s-timeout overschrijden, waardoor alleen tectonic
+  // rendert en de gebruiker leek te moeten verversen om de rest te krijgen. Twee maatregelen:
+  // ruimere timeout (35s) en één automatische retry na een korte pauze, die in de praktijk de
+  // inmiddels warme cache raakt -- zodat een handmatige refresh niet meer nodig zou moeten zijn.
+  var KNMI_TIMEOUT_MS = 35000;
+  var KNMI_RETRY_DELAY_MS = 1500;
+
+  function delay(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
   async function fetchKnmiCsv(url) {
-    var res = await fetchWithTimeout(url, {}, 20000);
-    if (!res.ok) throw new Error("KNMI-verzoek mislukt (" + res.status + ")");
-    return res.text();
+    try {
+      var res = await fetchWithTimeout(url, {}, KNMI_TIMEOUT_MS);
+      if (!res.ok) throw new Error("KNMI-verzoek mislukt (" + res.status + ")");
+      return await res.text();
+    } catch (err) {
+      // Eenmalige automatische herkansing bij een trage/koude eerste respons of afgebroken
+      // verzoek, i.p.v. de gebruiker zelf te laten verversen.
+      await delay(KNMI_RETRY_DELAY_MS);
+      var retryRes = await fetchWithTimeout(url, {}, KNMI_TIMEOUT_MS);
+      if (!retryRes.ok) throw new Error("KNMI-verzoek mislukt (" + retryRes.status + ")");
+      return await retryRes.text();
+    }
   }
 
   // CSV-kolommen: YYMMDD,TIME,LOCATION,LAT,LON,DEPTH,MAG,EVALMODE. LOCATION kan zelf een komma
