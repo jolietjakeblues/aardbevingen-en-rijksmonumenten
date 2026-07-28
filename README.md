@@ -73,6 +73,12 @@ Geen build-stap nodig. Twee opties:
 
 Handmatige testchecklist na een wijziging: zie [documentation/TESTS.md](documentation/TESTS.md).
 
+## Disclaimer
+
+Deze toepassing is een onafhankelijk initiatief en is niet gebouwd in opdracht van het KNMI of de Rijksdienst voor het Cultureel Erfgoed. De kaart gebruikt openbare gegevens die rechtstreeks bij deze organisaties worden opgehaald. De weergave en berekeningen zijn informatief en verkennend. Aan de inhoud kunnen geen rechten of plichten worden ontleend.
+
+Lees de volledige disclaimer in [DISCLAIMER.md](DISCLAIMER.md).
+
 ## Licentie
 
 [MIT](LICENSE) - vrij te gebruiken, aan te passen en te verspreiden, mits de copyright-notice
