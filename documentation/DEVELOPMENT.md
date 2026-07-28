@@ -146,6 +146,3 @@ die is bewust uitgesteld naar het onderzoekstraject voor de 2e officiële releas
 
 - **Besloten: de versioned-snapshot-conventie blijft** (zie Bestandsstructuur hierboven): een
   bijgewerkt, versienummerd paar per versie, onderling zelfstandig gelinkt.
-- **Besloten: v0.20.0 is de eerste officiële release.** Alle bestanden zijn klaargezet
-  (versienummers, CHANGELOG, snapshot-paar); het daadwerkelijke taggen/publiceren van de GitHub
-  Release doet de gebruiker zelf.
