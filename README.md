@@ -56,8 +56,8 @@ De impactindicatie is **verkennend - geen schade- of risicobeoordeling**. Formul
 drie gepubliceerde IMG-effectgebieden en de belangrijkste beperking (niet gevalideerd voor
 diepe/tektonische bevingen) staan in [documentation/IMPACTSCORE.md](documentation/IMPACTSCORE.md).
 
-Overige bekende beperkingen (responsiviteit, query-limieten, afhankelijkheid van externe
-diensten) en de roadmap staan in [documentation/DEVELOPMENT.md](documentation/DEVELOPMENT.md).
+Overige bekende beperkingen, query-limieten, afhankelijkheid van externe
+diensten en de roadmap staan in [documentation/DEVELOPMENT.md](documentation/DEVELOPMENT.md).
 
 ## Lokaal draaien
 
