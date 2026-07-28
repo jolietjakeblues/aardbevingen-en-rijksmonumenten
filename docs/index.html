@@ -702,7 +702,7 @@
         (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
         (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
         (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
-        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Indicatieve impactscore: " + score.toFixed(2) +
+        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Impactindicatie: " + score.toFixed(1) +
           (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
           (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
         '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
@@ -787,7 +787,7 @@
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten indicatie</div>' +
       '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - onroerend gebouwd</div>' +
       '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - archeologisch</div>' +
-      '<div class="hint">Verkennende score, geen schadebeoordeling. Gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km (trillingssnelheid 2 mm/s). Alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte - bij diepe of tektonische bevingen is dit een ruwe extrapolatie.</div>' +
+      '<div class="hint">Impactindicatie: verkennend, geen schadebeoordeling. Gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km (trillingssnelheid 2 mm/s). Alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte - bij diepe of tektonische bevingen is dit een ruwe extrapolatie.</div>' +
       '</div>';
   }
 
@@ -811,7 +811,7 @@
 
   // Tijd-animatie: toont aardbevingen cumulatief tot en met het gekozen jaar, om de opbouw (en
   // recente afname) van geinduceerde seismiciteit zichtbaar te maken. Werkt uitsluitend op de
-  // kaartweergave -- de straal-statistieken en impactscore blijven altijd op de volledige, actuele
+  // kaartweergave -- de straal-statistieken en impactindicatie blijven altijd op de volledige, actuele
   // dataset gebaseerd, want die zijn bedoeld als complete analyse, niet als animatie.
   function updateTimeLabel() {
     $("timeYearLabel").textContent = state.timeFrom === null ? "alles" : (state.timeFrom + "–" + state.timeTo);

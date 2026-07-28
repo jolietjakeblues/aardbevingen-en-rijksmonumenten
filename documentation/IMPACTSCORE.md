@@ -1,10 +1,12 @@
-# Impactscore
+# Impactindicatie
 
-De impactscore is een **vereenvoudigde, illustratieve indicator** - geen gevalideerd schade- of
-risicomodel. Doel: laten zien of een epicentrum-monument-combinatie plausibel binnen een
-realistisch trillingsgebied valt, niet om schade te voorspellen. In de interface wordt hij
-consequent aangeduid als *indicatief effectgebied* en *verkennende score* - nadrukkelijk **geen
-schadebeoordeling**.
+De impactindicatie (voorheen "impactscore" genoemd - hernoemd omdat "score" een preciezere
+meting suggereert dan de methode kan waarmaken) is een **vereenvoudigde, illustratieve indicator**
+- geen gevalideerd schade- of risicomodel. Doel: laten zien of een epicentrum-monument-combinatie
+plausibel binnen een realistisch trillingsgebied valt, niet om schade te voorspellen. In de
+interface wordt hij consequent aangeduid als *indicatief effectgebied* en *verkennende
+impactindicatie* - nadrukkelijk **geen schadebeoordeling**, en getoond met maximaal 1 decimaal om
+geen schijnprecisie te suggereren.
 
 ## Formule
 

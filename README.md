@@ -1,8 +1,8 @@
 # Aardbevingen NL - epicentrum & rijksmonumenten
 
 Interactieve kaart van Nederlandse aardbevingen met een straal-selectie die laat zien welke
-rijksmonumenten binnen die straal liggen, inclusief een indicatieve, verkennende impactscore per
-monument - geen schadebeoordeling.
+rijksmonumenten binnen die straal liggen, inclusief een verkennende impactindicatie per monument -
+geen schadebeoordeling.
 
 **Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
@@ -15,8 +15,7 @@ Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
 
 Je selecteert een aardbeving (klik op de kaart, of zoek op plaatsnaam) en een straal in
 kilometers. De kaart laat vervolgens zien welke rijksmonumenten binnen die straal liggen, met per
-monument een indicatieve impactscore die aangeeft hoe plausibel het is dat de beving daar
-voelbaar was. Achtergrond over waarom deze combinatie van data relevant is, staat op de aparte
+monument een impactindicatie die aangeeft hoe plausibel het is dat de beving daar voelbaar was. Achtergrond over waarom deze combinatie van data relevant is, staat op de aparte
 pagina [`docs/achtergrond.html`](docs/achtergrond.html) (bereikbaar via de link onderaan de
 kaart).
 
@@ -27,7 +26,7 @@ kaart).
 - Rijksmonument-popups met naam (indien bekend), oorspronkelijke én huidige functie, monumentaard,
   link naar het monumentenregister en de linked-data URI.
 - Eigen icoon per monumenttype (huisje voor onroerend gebouwd, schop voor archeologisch) en een
-  rood/oranje/groen indicatie van de impactscore, onafhankelijk van elkaar te combineren.
+  rood/oranje/groen weergave van de impactindicatie, onafhankelijk van elkaar te combineren.
 - Tijd-animatie met een dubbele slider om een specifiek jarenvenster te kiezen of de opbouw van
   Groningse seismiciteit chronologisch af te spelen.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
@@ -49,10 +48,9 @@ zie [documentation/DATA.md](documentation/DATA.md).
 
 ## Beperkingen en disclaimer
 
-De impactscore is een **indicatieve, verkennende score - geen schade- of risicobeoordeling**.
-Formule, kalibratie op drie gepubliceerde IMG-effectgebieden en de belangrijkste beperking (niet
-gevalideerd voor diepe/tektonische bevingen) staan in
-[documentation/IMPACTSCORE.md](documentation/IMPACTSCORE.md).
+De impactindicatie is **verkennend - geen schade- of risicobeoordeling**. Formule, kalibratie op
+drie gepubliceerde IMG-effectgebieden en de belangrijkste beperking (niet gevalideerd voor
+diepe/tektonische bevingen) staan in [documentation/IMPACTSCORE.md](documentation/IMPACTSCORE.md).
 
 Overige bekende beperkingen (responsiviteit, query-limieten, afhankelijkheid van externe
 diensten) en de roadmap staan in [documentation/DEVELOPMENT.md](documentation/DEVELOPMENT.md).
