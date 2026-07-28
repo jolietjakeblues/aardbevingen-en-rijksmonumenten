@@ -9,11 +9,12 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten.html` - momentopname van `index.html`, bedoeld als
-  versienummerde snapshot (voorheen `..._v0.16.0.html`) zodat een specifieke release terug te
-  vinden is zonder door de git-historie te zoeken. **Momenteel achterhaald**: mist het
-  versienummer in de bestandsnaam en de inhoud staat nog op v0.16.0 (geen kopie van
-  `achtergrond.html`, geen van de wijzigingen sinds v0.17.0) - zie "Open beslissingen" hieronder.
+- `aardbevingen_en_rijksmonumenten_v0.19.0.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.0.html`
+  - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
+  onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
+  terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0: het vorige,
+  ongenummerde bestand (`aardbevingen_en_rijksmonumenten.html`, inhoud nog op v0.16.0) is
+  vervangen door dit bijgewerkte, volledige paar.
 
 Het oudere `aardbevingen_kaart.html` (van vóór v0.16.0) is verwijderd nadat is geverifieerd dat
 `docs/index.html` er een volledige superset van is - geen functionaliteit kwijt, wel twee
@@ -106,14 +107,9 @@ wordt:
 
 ## Open beslissingen
 
-- **Besloten: de versioned-snapshot-conventie blijft.** Elke release krijgt een los HTML-bestand
-  met versienummer in de bestandsnaam. Let op: het bestand staat momenteel *niet* meer volgens die
-  conventie in de repo - het heet nu `aardbevingen_en_rijksmonumenten.html` (zonder
-  versienummer) en de inhoud is nog v0.16.0, dus het mist alle wijzigingen sinds v0.17.0
-  (automatisch zoomen, achtergrondpagina, documentatie-herstructurering, KNMI-fix,
-  impactindicatie-hernoeming). Moet worden rechtgezet: hernoemen naar een versienummer en de
-  inhoud bijwerken naar de actuele `docs/index.html` (+ eventueel een versienummerde kopie van
-  `docs/achtergrond.html`) - nog niet uitgevoerd, wacht op bevestiging van de gewenste
-  bestandsnaam/frequentie (bij elke versie, of alleen bij publieke releases als v0.20.0).
+- **Besloten: de versioned-snapshot-conventie blijft**, en is in v0.19.0 rechtgezet (zie
+  Bestandsstructuur hierboven): een bijgewerkt, versienummerd paar
+  (`aardbevingen_en_rijksmonumenten_v0.19.0.html` + `..._achtergrond_v0.19.0.html`), onderling
+  zelfstandig gelinkt.
 - Wanneer/of er een officiële GitHub Release getagd wordt - tot die tijd is elke versie in
   [CHANGELOG.md](../CHANGELOG.md) een ontwikkelversie, geen release.

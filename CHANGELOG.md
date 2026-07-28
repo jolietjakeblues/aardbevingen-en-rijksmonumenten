@@ -14,12 +14,18 @@ uitgebreide technische verantwoording, die nu in `documentation/` staat). Daarna
 gefixt: het KNMI induced-events-endpoint bleek een trage koude-cache-start (~15,5s) te hebben die
 op sommige apparaten het toenmalige 20s-timeout overschreed, waardoor die categorie soms pas na
 een handmatige refresh verscheen - opgelost met een ruimere timeout en een automatische
-herkansing. Tot slot `docs/achtergrond.html` aangevuld met informatie uit 11 aanvullende
+herkansing. Verder `docs/achtergrond.html` aangevuld met informatie uit 11 aanvullende
 RCE-bronnen: historische kerkversterkingen, boerderijenvisies en -subsidies, karakteristieke
 (niet-monumentale) panden, het industrieel erfgoed van de gaswinning zelf, het archeologische
 onderzoeksprotocol bij funderingsherstel (nieuwe sectie, expliciet gekoppeld aan het schop-icoon
 op de kaart), bredere bodembewegingsmechanismen naast trilling, en de daadwerkelijke
-RCE-monitoringspraktijk (nieuwe sectie, als contrast met de indicatieve impactscore).
+RCE-monitoringspraktijk (nieuwe sectie, als contrast met de indicatieve impactscore). Naar
+aanleiding van een review "impactscore" hernoemd naar "impactindicatie" door de hele interface en
+documentatie, en de popup toont nu 1 decimaal i.p.v. 2 om geen schijnprecisie te suggereren.
+Tot slot de versienummerde snapshot-bestanden rechtgezet: het achterhaalde, ongenummerde
+`aardbevingen_en_rijksmonumenten.html` (inhoud nog op v0.16.0) vervangen door een bijgewerkt,
+zelfstandig gelinkt paar - `aardbevingen_en_rijksmonumenten_v0.19.0.html` en
+`..._achtergrond_v0.19.0.html`.
 
 ## v0.18.0 - achtergrondpagina
 

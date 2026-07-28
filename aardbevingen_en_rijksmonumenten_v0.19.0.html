@@ -159,7 +159,8 @@
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
-      Applicatieversie 0.16.0
+      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.19.0.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
+      Applicatieversie 0.19.0
     </footer>
   </div>
   <div id="mapPane">
@@ -357,10 +358,33 @@
   var KNMI_INDUCED_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv";
   var KNMI_TECTONIC_URL = "https://rdsa.knmi.nl/abcws/event/query?eventtype=tectonic&format=csv";
 
+  // Gemeten (curl, drie herhalingen): het induced-endpoint kost bij een "koude" cache ~15,5s om
+  // te antwoorden, tegen ~0,8s zodra de KNMI-server 'm net gecached heeft; het tectonic-endpoint
+  // toont hetzelfde patroon maar minder uitgesproken (~7,2s koud, ~0,9s warm). Op een trager
+  // netwerk/toestel kan die koude start het 20s-timeout overschrijden, waardoor alleen tectonic
+  // rendert en de gebruiker leek te moeten verversen om de rest te krijgen. Twee maatregelen:
+  // ruimere timeout (35s) en één automatische retry na een korte pauze, die in de praktijk de
+  // inmiddels warme cache raakt -- zodat een handmatige refresh niet meer nodig zou moeten zijn.
+  var KNMI_TIMEOUT_MS = 35000;
+  var KNMI_RETRY_DELAY_MS = 1500;
+
+  function delay(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
   async function fetchKnmiCsv(url) {
-    var res = await fetchWithTimeout(url, {}, 20000);
-    if (!res.ok) throw new Error("KNMI-verzoek mislukt (" + res.status + ")");
-    return res.text();
+    try {
+      var res = await fetchWithTimeout(url, {}, KNMI_TIMEOUT_MS);
+      if (!res.ok) throw new Error("KNMI-verzoek mislukt (" + res.status + ")");
+      return await res.text();
+    } catch (err) {
+      // Eenmalige automatische herkansing bij een trage/koude eerste respons of afgebroken
+      // verzoek, i.p.v. de gebruiker zelf te laten verversen.
+      await delay(KNMI_RETRY_DELAY_MS);
+      var retryRes = await fetchWithTimeout(url, {}, KNMI_TIMEOUT_MS);
+      if (!retryRes.ok) throw new Error("KNMI-verzoek mislukt (" + retryRes.status + ")");
+      return await retryRes.text();
+    }
   }
 
   // CSV-kolommen: YYMMDD,TIME,LOCATION,LAT,LON,DEPTH,MAG,EVALMODE. LOCATION kan zelf een komma
@@ -678,7 +702,7 @@
         (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
         (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
         (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
-        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Indicatieve impactscore: " + score.toFixed(2) +
+        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + " km<br>Impactindicatie: " + score.toFixed(1) +
           (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
           (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
         '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
@@ -758,12 +782,12 @@
       '<div class="legend-control-body" style="display:none">' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["geïnduceerde aardbevingen"] + '"></span>Geïnduceerde aardbeving</div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["tektonische aardbevingen"] + '"></span>Tektonische aardbeving</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur - ruim binnen effectgebied</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur - net binnen effectgebied</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten effectgebied</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur - ruim binnen indicatie</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur - net binnen indicatie</div>' +
+      '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten indicatie</div>' +
       '<div class="legend-item">' + houseIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - onroerend gebouwd</div>' +
       '<div class="legend-item">' + spadeIconSvg(MONUMENT_COLOR_UNKNOWN) + '&nbsp;Rijksmonument-vorm - archeologisch</div>' +
-      '<div class="hint">De indicatie is gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km. De gebruikte trillingssnelheid is 2 mm/s. De indicatie is alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte. Bij diepe of tektonische bevingen is dit een ruwe extrapolatie en geen schadebeoordeling.</div>' +
+      '<div class="hint">Impactindicatie: verkennend, geen schadebeoordeling. Gekalibreerd op drie gepubliceerde IMG-effectgebieden: Wirdum M3,1 op 17,5 km, Huizinge M3,6 op meer dan 35 km en een IMG-voorbeeld van M2,7 op 9,5 km (trillingssnelheid 2 mm/s). Alleen bedoeld voor ondiepe, geïnduceerde bevingen tot 5 km diepte - bij diepe of tektonische bevingen is dit een ruwe extrapolatie.</div>' +
       '</div>';
   }
 
@@ -787,7 +811,7 @@
 
   // Tijd-animatie: toont aardbevingen cumulatief tot en met het gekozen jaar, om de opbouw (en
   // recente afname) van geinduceerde seismiciteit zichtbaar te maken. Werkt uitsluitend op de
-  // kaartweergave -- de straal-statistieken en impactscore blijven altijd op de volledige, actuele
+  // kaartweergave -- de straal-statistieken en impactindicatie blijven altijd op de volledige, actuele
   // dataset gebaseerd, want die zijn bedoeld als complete analyse, niet als animatie.
   function updateTimeLabel() {
     $("timeYearLabel").textContent = state.timeFrom === null ? "alles" : (state.timeFrom + "–" + state.timeTo);
