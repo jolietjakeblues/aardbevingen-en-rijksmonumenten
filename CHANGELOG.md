@@ -4,6 +4,15 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.19.2 - niet-geselecteerde aardbevingen faden
+
+Bij een actieve selectie faden alle overige aardbevingen (fillOpacity 0,15/opacity 0,25) terwijl
+de geselecteerde beving vol zichtbaar blijft en bovenop de cluster getekend wordt - lost het
+"te veel clusters"-probleem op in dichtbevolkte gebieden zoals Groningen en Limburg, zonder de
+eerder afgewezen aparte marker/kruisje op de selectie zelf. Selectie wordt nu getrackt via een
+object-referentie (`state.selected.sourceEvent`), niet via coördinaten, zodat bevingen met
+identieke lat/lon niet per ongeluk worden verward.
+
 ## v0.19.1 - ingebouwde uitleg + versterkingsprogramma-badge
 
 Naar aanleiding van de roadmap-review twee punten daadwerkelijk gebouwd (i.p.v. alleen gepland):

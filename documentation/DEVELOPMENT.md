@@ -9,7 +9,7 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.19.1.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.1.html`
+- `aardbevingen_en_rijksmonumenten_v0.19.2.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.2.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -64,11 +64,14 @@ wordt:
    op te fitten, en/of de eigen indicatie naast RCE's daadwerkelijke monitoringdata leggen (zie
    `docs/achtergrond.html`, sectie "Hoe RCE het écht meet") om te zien hoe ver de vuistregel
    afwijkt van metingen. Dit is een onderzoekstaak, geen ontwikkeltaak - nog geen tijdsinschatting.
-4. **Niet-geselecteerde aardbevingen faden** zodra er een epicentrum actief is (i.p.v. de
-   geselecteerde apart te markeren). Concreet: `renderEarthquakeMarkers()` kent al een volledige
-   lijst zichtbare bevingen; bij een actieve selectie kunnen de overige markers een lagere
-   `fillOpacity`/`opacity` krijgen (bv. 0,15) terwijl de geselecteerde beving z'n volle kleur
-   behoudt - geen nieuwe marker of icoon nodig, alleen een opacity-tak in de render-functie.
+4. ~~**Niet-geselecteerde aardbevingen faden**~~ - **gedaan** (v0.19.1): `selectEpicenter()` slaat
+   nu ook de bronreferentie van het geklikte/gezochte event op (`state.selected.sourceEvent`,
+   object-identiteit i.p.v. lat/lon-vergelijking - robuust tegen bevingen met identieke
+   coördinaten). `renderEarthquakeMarkers()` (opgesplitst met een nieuwe helper
+   `addEarthquakeMarker(ev, fillOpacity, strokeOpacity)`) tekent bij een actieve selectie alle
+   overige bevingen op `fillOpacity 0,15`/`opacity 0,25`, de geselecteerde als laatste (dus
+   bovenop) op volle 0,85/1. Live geverifieerd: van 3.750 markers gingen er 3.749 naar 0,15 en 1
+   (de geklikte) bleef op 0,85.
 5. ~~**Korte, niet-verplichte uitleg toevoegen**~~ - **gedaan** (v0.19.0): een knop
    "Hoe werkt deze kaart?" naast de titel opent een uitklapblok (`#helpBody`, geen modal) met de
    drie stappen; het "Geselecteerd epicentrum"-paneel toont dezelfde drie stappen als

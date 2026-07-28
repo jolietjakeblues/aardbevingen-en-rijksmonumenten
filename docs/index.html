@@ -193,7 +193,7 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.19.1
+      Applicatieversie 0.19.2
     </footer>
   </div>
   <div id="mapPane">
@@ -570,47 +570,62 @@
     }
   }
 
+  function addEarthquakeMarker(ev, fillOpacity, strokeOpacity) {
+    var radius = ev.mag !== null ? Math.max(3, ev.mag * 2.2) : 3;
+    var marker = L.circleMarker([ev.lat, ev.lon], {
+      radius: radius,
+      color: MARKER_STROKE,
+      fillColor: colorForCategory(ev.category),
+      fillOpacity: fillOpacity,
+      opacity: strokeOpacity,
+      weight: 1
+    });
+    var dateStr = ev.date ? new Date(ev.date).toLocaleDateString("nl-NL") : "onbekende datum";
+    marker.bindTooltip(dateStr + (ev.mag !== null ? " · M" + ev.mag : ""));
+    marker.bindPopup(
+      '<div class="eq-info">' +
+      '<b>' + (ev.place ? escapeHtml(ev.place) : "Onbekend toponiem") + '</b><br>' +
+      dateStr + (ev.date ? " " + new Date(ev.date).toLocaleTimeString("nl-NL") : "") + '<br>' +
+      'Magnitude: ' + (ev.mag !== null ? ev.mag.toFixed(1) + " ML" : "onbekend") + '<br>' +
+      'Diepte: ' + (ev.depth !== null ? ev.depth + " km" : "onbekend") + '<br>' +
+      (ev.category ? escapeHtml(ev.category) : "categorie onbekend") +
+      '</div>'
+    );
+    marker.on("click", function () { selectEpicenter(ev.lat, ev.lon, ev.mag, ev.depth, ev.place, ev); });
+    marker.addTo(eqLayer);
+  }
+
   function renderEarthquakeMarkers() {
     eqLayer.clearLayers();
     var visible = state.timeFrom === null ? state.events : state.events.filter(function (ev) {
       var y = yearOf(ev.date);
       return y !== null && y >= state.timeFrom && y <= state.timeTo;
     });
+    var hasSelection = !!(state.selected && state.selected.sourceEvent);
+    // Bij een actieve selectie faden de overige bevingen (fillOpacity/opacity omlaag) i.p.v. de
+    // geselecteerde apart te markeren -- voorkomt dat dichte clusters (Groningen, Limburg) de
+    // gekozen beving overschreeuwen. De geselecteerde wordt als laatste getekend, dus zichtbaar
+    // bovenop de gefade cluster.
+    var selectedEv = null;
     visible.forEach(function (ev) {
-      var radius = ev.mag !== null ? Math.max(3, ev.mag * 2.2) : 3;
-      var marker = L.circleMarker([ev.lat, ev.lon], {
-        radius: radius,
-        color: MARKER_STROKE,
-        fillColor: colorForCategory(ev.category),
-        fillOpacity: 0.85,
-        weight: 1
-      });
-      var dateStr = ev.date ? new Date(ev.date).toLocaleDateString("nl-NL") : "onbekende datum";
-      marker.bindTooltip(dateStr + (ev.mag !== null ? " · M" + ev.mag : ""));
-      marker.bindPopup(
-        '<div class="eq-info">' +
-        '<b>' + (ev.place ? escapeHtml(ev.place) : "Onbekend toponiem") + '</b><br>' +
-        dateStr + (ev.date ? " " + new Date(ev.date).toLocaleTimeString("nl-NL") : "") + '<br>' +
-        'Magnitude: ' + (ev.mag !== null ? ev.mag.toFixed(1) + " ML" : "onbekend") + '<br>' +
-        'Diepte: ' + (ev.depth !== null ? ev.depth + " km" : "onbekend") + '<br>' +
-        (ev.category ? escapeHtml(ev.category) : "categorie onbekend") +
-        '</div>'
-      );
-      marker.on("click", function () { selectEpicenter(ev.lat, ev.lon, ev.mag, ev.depth, ev.place); });
-      marker.addTo(eqLayer);
+      if (hasSelection && ev === state.selected.sourceEvent) { selectedEv = ev; return; }
+      addEarthquakeMarker(ev, hasSelection ? 0.15 : 0.85, hasSelection ? 0.25 : 1);
     });
+    if (selectedEv) addEarthquakeMarker(selectedEv, 0.85, 1);
   }
 
-  function selectEpicenter(lat, lon, mag, depth, place) {
+  function selectEpicenter(lat, lon, mag, depth, place, sourceEvent) {
     state.selected = {
       lat: lat, lon: lon,
       mag: mag === undefined ? null : mag,
       depth: depth === undefined ? null : depth,
-      place: place || null
+      place: place || null,
+      sourceEvent: sourceEvent || null
     };
     drawRadiusCircle();
     renderSelectedInfo();
     renderEqStats();
+    renderEarthquakeMarkers();
     fetchMonumentsDebounced();
   }
 
@@ -835,7 +850,7 @@
       $("placeStatus").textContent = "";
       resetTimeFilter(); // zoekresultaat moet altijd zichtbaar zijn, ongeacht animatiepositie
       map.setView([match.lat, match.lon], 12);
-      selectEpicenter(match.lat, match.lon, match.mag, match.depth, match.place);
+      selectEpicenter(match.lat, match.lon, match.mag, match.depth, match.place, match);
     }
     input.addEventListener("change", trySelect);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") trySelect(); });
