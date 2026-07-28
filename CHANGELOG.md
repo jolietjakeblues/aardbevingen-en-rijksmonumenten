@@ -4,6 +4,18 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.19.3 - zoeken op rijksmonumentnummer
+
+Nieuw paneel "Zoek op rijksmonumentnummer": toont de locatie van het opgezochte monument (marker
+in een eigen kaartlaag, blijft staan ongeacht latere straal-wijzigingen) en de dichtstbijzijnde
+aardbeving uit de volledige dataset, met een knop om die beving als epicentrum te selecteren -
+een omgekeerde ingang naast de bestaande "kies een beving, zie de monumenten eromheen"-flow.
+Marker/popup hergebruiken dezelfde huisje/schop/kleur/ring-logica als de straal-resultaten (nu
+achter een gedeelde `buildMonumentMarker()`-functie). Invoer wordt strikt gevalideerd (alleen
+cijfers) vóór die in de SPARQL-query komt. Tijdens het testen een bug gevonden en gefixt: de
+query bond `?nr` niet aan de gefilterde waarde, waardoor elk resultaat crashte op een ontbrekend
+veld - opgelost met een expliciete `BIND`.
+
 ## v0.19.2 - niet-geselecteerde aardbevingen faden
 
 Bij een actieve selectie faden alle overige aardbevingen (fillOpacity 0,15/opacity 0,25) terwijl

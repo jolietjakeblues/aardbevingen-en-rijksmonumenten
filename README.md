@@ -6,7 +6,7 @@ geen schadebeoordeling.
 
 **Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
-Huidige versie: 0.19.2 (ontwikkelversie, nog geen officiële GitHub Release) - zie
+Huidige versie: 0.19.3 (ontwikkelversie, nog geen officiële GitHub Release) - zie
 [CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
 
 Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
@@ -29,6 +29,10 @@ kaart).
   rood/oranje/groen weergave van de impactindicatie, onafhankelijk van elkaar te combineren.
 - Tijd-animatie met een dubbele slider om een specifiek jarenvenster te kiezen of de opbouw van
   Groningse seismiciteit chronologisch af te spelen.
+- Zoeken op rijksmonumentnummer: toont de locatie van dat monument en de dichtstbijzijnde
+  aardbeving uit de volledige dataset, met een optie om die als epicentrum te selecteren.
+- Niet-geselecteerde aardbevingen faden zodra er een epicentrum actief is, om drukke clusters
+  (Groningen, Limburg) rustig te houden.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
 - Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
   plaats van dat de hele pagina faalt.

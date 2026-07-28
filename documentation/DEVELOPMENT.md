@@ -9,7 +9,7 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.19.2.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.2.html`
+- `aardbevingen_en_rijksmonumenten_v0.19.3.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.3.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -93,6 +93,25 @@ wordt:
   geen filter. Live geverifieerd op rijksmonument nr. 26265 (Petrus en Pauluskerk, Loppersum).
   Kanttekening: dit is een snapshot van de door de gebruiker aangeleverde lijst, geen live
   koppeling - kan achterlopen als de officiële lijst wijzigt.
+
+- ~~Rijksmonumentnummer-opzoeking (locatie + dichtstbijzijnde aardbeving)~~ - **gedaan** (v0.19.3):
+  nieuw paneel "Zoek op rijksmonumentnummer". Invoer strikt gevalideerd tegen `/^\d+$/` vóór
+  interpolatie in de SPARQL-query (enige plek in de app met vrije tekstinvoer richting een query -
+  injectierisico anders). Nieuwe query `buildMonumentByNumberQuery(nr)` (geen afstandsfilter,
+  haalt zelf de aard-URI op om huisje/schop te bepalen) en `mapMonumentByNumberBindings()`.
+  Marker- en popup-opbouw hergebruikt via een nieuwe gedeelde `buildMonumentMarker(m)`-functie
+  (ook gebruikt door `renderMonuments()`) - geen tweede visuele taal. Eigen `monSearchLayer`
+  (niet `monLayer`), zodat een latere straal-wijziging de gevonden marker niet wegveegt.
+  Dichtstbijzijnde aardbeving via een nieuwe `nearestEarthquake()`-scan over de volledige
+  `state.events` (1911-heden), los van de tijdslider. Resultaat toont een brug-knop "Selecteer
+  deze aardbeving als epicentrum" die de bestaande `selectEpicenter()` aanroept. **Bug gevonden en
+  gefixt tijdens het testen**: de eerste queryversie matchte `ceo:rijksmonumentnummer` op een
+  letterlijke waarde zonder die aan `?nr` te binden, waardoor `?nr` in elke oplossing ontbrak
+  (`b.nr` was `undefined` in JS) - opgelost met een expliciete `BIND("nr" AS ?nr)`. Live
+  geverifieerd op nr. 26265 (Loppersum, Petrus en Pauluskerk, ook in het versterkingsprogramma):
+  vindt "27-10-2007 · M2.0 · 0.1 km" als dichtstbijzijnde beving; brug-knop selecteert 'm correct
+  als epicentrum (1.689 aardbevingen / 613 rijksmonumenten binnen 25 km). Ongeldige/niet-gevonden
+  nummers geven een duidelijke foutmelding i.p.v. een crash.
 
 **Bewust niet opgepakt (besloten deze sessie):**
 - Polygon-centroid i.p.v. het eerste WKT-coördinatenpaar: die precisie is niet nodig gebleken.

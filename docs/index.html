@@ -84,6 +84,12 @@
   .panel { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0f0f0; }
   .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
   .slider-row { display:flex; align-items:center; gap:8px; }
+  .slider-row input[type=text] { flex: 1 1 auto; width: auto; }
+  .slider-row button {
+    flex: 0 0 auto; font-size: 13px; padding: 6px 12px; border: 1px solid var(--border);
+    border-radius: 4px; background: #fff; cursor: pointer; font-family: inherit;
+  }
+  .slider-row button:hover { background: #f5f5f5; }
   input[type=range] { flex:1; }
   input[type=text] {
     width: 100%; box-sizing: border-box; padding: 6px 8px; font-size: 13px;
@@ -188,12 +194,23 @@
       <div id="monStatus" aria-live="polite"><span class="placeholder">—</span></div>
     </div>
 
+    <div class="panel">
+      <h2>Zoek op rijksmonumentnummer</h2>
+      <div class="slider-row">
+        <label class="visually-hidden" for="monNrSearch">Rijksmonumentnummer</label>
+        <input type="text" id="monNrSearch" inputmode="numeric" placeholder="bijv. 26265" autocomplete="off">
+        <button type="button" id="monNrSearchBtn">Zoek</button>
+      </div>
+      <div class="hint">Toont de locatie van dit rijksmonument en de dichtstbijzijnde aardbeving uit de volledige dataset (1911-heden).</div>
+      <div id="monNrStatus" class="hint" aria-live="polite"></div>
+    </div>
+
     <footer>
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.19.2
+      Applicatieversie 0.19.3
     </footer>
   </div>
   <div id="mapPane">
@@ -308,7 +325,7 @@
   };
   var timePlayTimer = null;
 
-  var map, eqLayer, monLayer, radiusCircle;
+  var map, eqLayer, monLayer, monSearchLayer, radiusCircle;
 
   function $(id) { return document.getElementById(id); }
 
@@ -320,6 +337,18 @@
             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  // Zoekt over de VOLLEDIGE dataset (1911-heden), los van de tijdslider-animatie -- dezelfde
+  // regel als bij de straal-statistieken/impactindicatie: animatie is presentatie, geen filter
+  // op wat er geanalyseerd wordt.
+  function nearestEarthquake(lat, lon) {
+    var best = null, bestKm = Infinity;
+    state.events.forEach(function (ev) {
+      var km = haversineKm(lat, lon, ev.lat, ev.lon);
+      if (km < bestKm) { bestKm = km; best = ev; }
+    });
+    return best ? { event: best, distKm: bestKm } : null;
   }
 
   // Impactindicator gekalibreerd op drie ECHTE, herleidbare IMG-effectgebieden (Instituut
@@ -522,6 +551,55 @@
       'LIMIT ' + limit;
   }
 
+  // Rijksmonumentnummer-opzoeking (geen afstandsfilter, geen vaste aard vooraf -- de aard-URI
+  // wordt zelf opgehaald om te bepalen of het icoon een huisje of schop moet zijn). ceo:rijksmonu-
+  // mentnummer is xsd:string, niet xsd:integer (bevestigd in de rce-cho ontologiedocumentatie) --
+  // de aanroeper valideert vooraf met /^\d+$/ zodat hier nooit ongevalideerde tekst instroomt.
+  function buildMonumentByNumberQuery(nr) {
+    return 'PREFIX ceo: <https://linkeddata.cultureelerfgoed.nl/def/ceo#>\n' +
+      'PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n' +
+      'PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n' +
+      'SELECT ?mon ?nr (SAMPLE(?wkt) AS ?wktSample) (SAMPLE(?naam) AS ?naamOut) (SAMPLE(?funcOorspr) AS ?funcOorsprOut) (SAMPLE(?funcHuidig) AS ?funcHuidigOut) (SAMPLE(?aardLabel) AS ?aardOut) (SAMPLE(?aardUri) AS ?aardUriOut) WHERE {\n' +
+      '  ?mon a ceo:Rijksmonument ;\n' +
+      '       ceo:rijksmonumentnummer "' + nr + '" ;\n' +
+      '       ceo:heeftGeometrie ?geomNode .\n' +
+      // ?nr matcht op de letterlijke waarde (?mon ceo:rijksmonumentnummer "..") maar wordt daar
+      // zelf niet door gebonden -- expliciet BIND'en, anders ontbreekt ?nr in elke oplossing
+      // (gevonden tijdens testen: b.nr was undefined in elke binding zonder deze regel).
+      '  BIND("' + nr + '" AS ?nr)\n' +
+      '  ?geomNode geo:asWKT ?wkt .\n' +
+      '  GRAPH <' + INSTANTIES_GRAPH + '> {\n' +
+      '    ?mon ceo:heeftJuridischeStatus <' + STATUS_RIJKSMONUMENT_URI + '> ;\n' +
+      '         ceo:heeftMonumentAard ?aardUri .\n' +
+      '    ?aardUri skos:prefLabel ?aardLabel .\n' +
+      '  }\n' +
+      '  OPTIONAL { ?mon ceo:heeftNaam ?naamObj . ?naamObj ceo:naam ?naam }\n' +
+      '  OPTIONAL { ?mon ceo:heeftHuidigeFunctie ?funcObjH . ?funcObjH ceo:heeftFunctieNaam ?funcCH . ?funcCH skos:prefLabel ?funcHuidig . FILTER(LANG(?funcHuidig) = "nl") }\n' +
+      '  OPTIONAL { ?mon ceo:heeftOorspronkelijkeFunctie ?funcObjO . ?funcObjO ceo:heeftFunctieNaam ?funcCO . ?funcCO skos:prefLabel ?funcOorspr . FILTER(LANG(?funcOorspr) = "nl") }\n' +
+      '}\n' +
+      'GROUP BY ?mon ?nr\n' +
+      'LIMIT 5';
+  }
+
+  function mapMonumentByNumberBindings(bindings) {
+    return bindings.map(function (b) {
+      var pt = parseFirstLonLat(b.wktSample.value);
+      var aardUri = b.aardUriOut ? b.aardUriOut.value : null;
+      return {
+        uri: b.mon.value,
+        nr: b.nr.value,
+        lat: pt ? pt.lat : null,
+        lon: pt ? pt.lon : null,
+        naam: b.naamOut ? b.naamOut.value : null,
+        functieOorspr: b.funcOorsprOut ? b.funcOorsprOut.value : null,
+        functieHuidig: b.funcHuidigOut ? b.funcHuidigOut.value : null,
+        aard: b.aardOut ? b.aardOut.value : null,
+        type: aardUri === AARD_ARCHEOLOGISCH_URI ? "archeologisch" : "gebouwd",
+        distKm: null
+      };
+    }).filter(function (m) { return m.lat !== null; });
+  }
+
   function initMap() {
     map = L.map("map", { center: [52.2, 5.3], zoom: 8 });
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
@@ -530,6 +608,9 @@
     }).addTo(map);
     eqLayer = L.layerGroup().addTo(map);
     monLayer = L.layerGroup().addTo(map);
+    // Aparte laag voor de rijksmonumentnummer-opzoeking: blijft zichtbaar ongeacht straal-
+    // wijzigingen elders (die alleen monLayer legen via renderMonuments()).
+    monSearchLayer = L.layerGroup().addTo(map);
   }
 
   async function loadEarthquakes() {
@@ -771,43 +852,47 @@
     }
   }
 
-  function renderMonuments(monuments) {
-    monLayer.clearLayers();
+  // Gedeeld door renderMonuments() (straal-resultaten) en de rijksmonumentnummer-opzoeking:
+  // zelfde icoon/kleur/ring/popup-logica, zodat er geen tweede visuele taal ontstaat.
+  function buildMonumentMarker(m) {
     var mag = state.selected ? state.selected.mag : null;
     var depth = state.selected ? state.selected.depth : null;
-    monuments.forEach(function (m) {
-      var score = (mag !== null && m.distKm !== null) ? impactScore(mag, depth, m.distKm) : null;
-      var color = impactColor(score);
-      var inVersterking = VERSTERKINGSPROGRAMMA_NRS.has(m.nr);
-      // divIcon i.p.v. L.rectangle: vaste pixelgrootte (net als de aardbeving-cirkels), zodat het
-      // icoon ook bij uitgezoomde weergaven zichtbaar blijft in plaats van te verdwijnen. Bij
-      // inVersterking groeit de iconSize mee met de extra ring (zie monumentIconSvg) -- één
-      // marker/icoon, geen los ring-element, om click-volgorde-problemen te vermijden.
-      var px = inVersterking ? MONUMENT_ICON_PX + VERSTERKING_RING_MARGIN : MONUMENT_ICON_PX;
-      var icon = L.divIcon({
-        className: "",
-        html: monumentIconSvg(m.type, color, inVersterking),
-        iconSize: [px, px],
-        iconAnchor: [px / 2, px / 2]
-      });
-      var rect = L.marker([m.lat, m.lon], { icon: icon });
-      rect.bindPopup(
-        '<div class="eq-info">' +
-        '<b>' + (m.naam ? escapeHtml(m.naam) : "Rijksmonument nr. " + escapeHtml(m.nr)) + '</b><br>' +
-        (m.naam ? "Rijksmonument nr. " + escapeHtml(m.nr) + '<br>' : "") +
-        (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
-        (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
-        (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
-        (inVersterking ? '<span style="color:' + VERSTERKING_RING_COLOR + '">&#9679; In het officiële RCE-versterkingsprogramma</span><br>' : "") +
-        (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + ' km<br>Impactindicatie <span class="info-icon" title="Verkennende indicatie, geen schadebeoordeling.">ⓘ</span>: ' + score.toFixed(1) +
-          (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
-          (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
-        '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
-        '<a href="' + m.uri + '" target="_blank" rel="noopener">Linked-data URI</a>' +
-        '</div>'
-      );
-      rect.addTo(monLayer);
+    var score = (mag !== null && m.distKm !== null) ? impactScore(mag, depth, m.distKm) : null;
+    var color = impactColor(score);
+    var inVersterking = VERSTERKINGSPROGRAMMA_NRS.has(m.nr);
+    // divIcon i.p.v. L.rectangle: vaste pixelgrootte (net als de aardbeving-cirkels), zodat het
+    // icoon ook bij uitgezoomde weergaven zichtbaar blijft in plaats van te verdwijnen. Bij
+    // inVersterking groeit de iconSize mee met de extra ring (zie monumentIconSvg) -- één
+    // marker/icoon, geen los ring-element, om click-volgorde-problemen te vermijden.
+    var px = inVersterking ? MONUMENT_ICON_PX + VERSTERKING_RING_MARGIN : MONUMENT_ICON_PX;
+    var icon = L.divIcon({
+      className: "",
+      html: monumentIconSvg(m.type, color, inVersterking),
+      iconSize: [px, px],
+      iconAnchor: [px / 2, px / 2]
     });
+    var rect = L.marker([m.lat, m.lon], { icon: icon });
+    rect.bindPopup(
+      '<div class="eq-info">' +
+      '<b>' + (m.naam ? escapeHtml(m.naam) : "Rijksmonument nr. " + escapeHtml(m.nr)) + '</b><br>' +
+      (m.naam ? "Rijksmonument nr. " + escapeHtml(m.nr) + '<br>' : "") +
+      (m.functieOorspr ? "Oorspronkelijke functie: " + escapeHtml(stripParenSuffix(m.functieOorspr)) + '<br>' : "") +
+      (m.functieHuidig ? "Huidige functie: " + escapeHtml(stripParenSuffix(m.functieHuidig)) + '<br>' : "") +
+      (m.aard ? "Monumentaard: " + escapeHtml(m.aard) + '<br>' : "") +
+      (inVersterking ? '<span style="color:' + VERSTERKING_RING_COLOR + '">&#9679; In het officiële RCE-versterkingsprogramma</span><br>' : "") +
+      (score !== null ? "Afstand tot epicentrum: " + m.distKm.toFixed(1) + ' km<br>Impactindicatie <span class="info-icon" title="Verkennende indicatie, geen schadebeoordeling.">ⓘ</span>: ' + score.toFixed(1) +
+        (score >= 0 ? " (binnen indicatief effectgebied)" : " (buiten indicatief effectgebied)") +
+        (isImpactLowConfidence(depth) ? " - let op: diepe beving, kalibratie minder betrouwbaar op afstand" : "") + '<br>' : "") +
+      '<a href="' + MONUMENTENREGISTER_URL + m.nr + '" target="_blank" rel="noopener">Bekijk in monumentenregister</a><br>' +
+      '<a href="' + m.uri + '" target="_blank" rel="noopener">Linked-data URI</a>' +
+      '</div>'
+    );
+    return rect;
+  }
+
+  function renderMonuments(monuments) {
+    monLayer.clearLayers();
+    monuments.forEach(function (m) { buildMonumentMarker(m).addTo(monLayer); });
   }
 
   function populatePlaceList() {
@@ -854,6 +939,71 @@
     }
     input.addEventListener("change", trySelect);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") trySelect(); });
+  }
+
+  function initMonNrSearch() {
+    var input = $("monNrSearch");
+    var statusEl = $("monNrStatus");
+
+    async function trySearch() {
+      var raw = input.value.trim();
+      if (!raw) { statusEl.innerHTML = ""; return; }
+      // Bewuste whitelist-validatie vooraf -- ceo:rijksmonumentnummer is xsd:string (niet
+      // xsd:integer, bevestigd in de rce-cho-ontologiedocumentatie), dus de waarde wordt gequote
+      // in de query; zonder deze check zou vrije tekstinvoer rechtstreeks in de SPARQL-querystring
+      // belanden (injectierisico). Dit is de enige plek in de app met vrije gebruikersinvoer die
+      // in een query terechtkomt.
+      if (!/^\d+$/.test(raw)) {
+        statusEl.innerHTML = '<span class="error-msg" role="alert">Vul een rijksmonumentnummer in van alleen cijfers.</span>';
+        return;
+      }
+
+      statusEl.innerHTML = '<span class="loading">Rijksmonument opzoeken…</span>';
+      try {
+        var bindings = await sparqlSelect(MON_ENDPOINT, buildMonumentByNumberQuery(raw));
+        var matches = mapMonumentByNumberBindings(bindings);
+        if (!matches.length) {
+          statusEl.innerHTML = '<span class="placeholder">Geen geldig rijksmonument gevonden met nummer ' + escapeHtml(raw) + ' (mogelijk een ongeldig nummer, of een andere status dan "rijksmonument").</span>';
+          monSearchLayer.clearLayers();
+          return;
+        }
+        var m = matches[0];
+
+        monSearchLayer.clearLayers();
+        var marker = buildMonumentMarker(m);
+        marker.addTo(monSearchLayer);
+        map.setView([m.lat, m.lon], 15);
+        marker.openPopup();
+
+        var nearest = nearestEarthquake(m.lat, m.lon);
+        var resultHtml = '<div class="eq-info">' +
+          '<b>' + (m.naam ? escapeHtml(m.naam) : "Rijksmonument nr. " + escapeHtml(m.nr)) + '</b> gevonden.<br>';
+        if (nearest) {
+          var ev = nearest.event;
+          var dateStr = ev.date ? new Date(ev.date).toLocaleDateString("nl-NL") : "onbekende datum";
+          resultHtml += 'Dichtstbijzijnde aardbeving: ' + dateStr +
+            (ev.mag !== null ? ' · M' + ev.mag.toFixed(1) : '') +
+            ' · ' + nearest.distKm.toFixed(1) + ' km<br>' +
+            '<button type="button" id="selectNearestBtn">Selecteer deze aardbeving als epicentrum</button>';
+        } else {
+          resultHtml += 'Geen aardbevingen in de dataset om afstand tegen te vergelijken.';
+        }
+        resultHtml += '</div>';
+        statusEl.innerHTML = resultHtml;
+
+        if (nearest) {
+          $("selectNearestBtn").addEventListener("click", function () {
+            resetTimeFilter();
+            selectEpicenter(nearest.event.lat, nearest.event.lon, nearest.event.mag, nearest.event.depth, nearest.event.place, nearest.event);
+          });
+        }
+      } catch (err) {
+        statusEl.innerHTML = '<span class="error-msg" role="alert">Kon rijksmonument niet opzoeken: ' + escapeHtml(err.message) + '</span>';
+      }
+    }
+
+    $("monNrSearchBtn").addEventListener("click", trySearch);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") trySearch(); });
   }
 
   function initSlider() {
@@ -1024,6 +1174,7 @@
   new LegendControl().addTo(map);
   initSlider();
   initPlaceSearch();
+  initMonNrSearch();
   initTimeControls();
   initHelpToggle();
   loadEarthquakes();
