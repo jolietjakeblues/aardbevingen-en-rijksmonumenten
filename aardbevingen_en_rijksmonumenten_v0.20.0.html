@@ -98,7 +98,14 @@
   .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .radius-val { font-size: 13px; font-weight: 600; min-width: 52px; text-align:right; }
   .placeholder { color: var(--muted); font-size: 13px; }
-  .loading { color: var(--muted); font-style: italic; font-size: 12px; }
+  .loading { color: var(--muted); font-style: italic; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .spinner {
+    display: inline-block; width: 12px; height: 12px; flex: 0 0 auto;
+    border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
   .error-msg { color: #b3261e; font-size: 12px; }
   .stat-grid { display:grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 13px; }
   .stat-grid .k { color: #555; }
@@ -205,6 +212,7 @@
         <label class="visually-hidden" for="monNrSearch">Rijksmonumentnummer</label>
         <input type="text" id="monNrSearch" inputmode="numeric" placeholder="bijv. 26265" autocomplete="off">
         <button type="button" id="monNrSearchBtn">Zoek</button>
+        <button type="button" id="monNrResetBtn" title="Zoekresultaat wissen">Wis</button>
       </div>
       <div class="hint">Toont de locatie van dit rijksmonument en de dichtstbijzijnde aardbeving uit de volledige dataset (1911-heden).</div>
       <div id="monNrStatus" class="hint" aria-live="polite"></div>
@@ -332,7 +340,8 @@
     timeFrom: null,       // null (samen met timeTo=null) = toon alles; anders: venster [timeFrom, timeTo]
     timeTo: null,
     minYear: null,
-    maxYear: null
+    maxYear: null,
+    lastMonSearch: null   // laatst opgezochte monument via rijksmonumentnummer, of null
   };
   var timePlayTimer = null;
 
@@ -424,6 +433,12 @@
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  // Zichtbare laad-indicator i.p.v. alleen cursieve tekst -- gebruikt door alle asynchrone
+  // statussen (aardbevingen, monumenten binnen straal, nummer-opzoeking).
+  function loadingHtml(text) {
+    return '<span class="loading"><span class="spinner" aria-hidden="true"></span>' + escapeHtml(text) + '</span>';
   }
 
   // CEO-functienamen komen soms met een intern codeachtervoegsel, inconsistent met/zonder spatie
@@ -625,7 +640,7 @@
   }
 
   async function loadEarthquakes() {
-    $("eqStats").innerHTML = '<span class="loading">Aardbevingen laden…</span>';
+    $("eqStats").innerHTML = loadingHtml("Aardbevingen laden…");
     try {
       var results = await Promise.allSettled([
         fetchKnmiCsv(KNMI_INDUCED_URL),
@@ -817,7 +832,7 @@
   async function fetchMonuments() {
     if (!state.selected) return;
     var token = ++state.monFetchToken;
-    $("monStatus").innerHTML = '<span class="loading">Rijksmonumenten ophalen…</span>';
+    $("monStatus").innerHTML = loadingHtml("Rijksmonumenten ophalen…");
     try {
       var radiusM = state.radiusKm * 1000;
       var lon = state.selected.lon, lat = state.selected.lat;
@@ -904,6 +919,31 @@
   function renderMonuments(monuments) {
     monLayer.clearLayers();
     monuments.forEach(function (m) { buildMonumentMarker(m).addTo(monLayer); });
+    renderMonSearchMarker(monuments);
+  }
+
+  // Houdt de rijksmonumentnummer-zoekresultaat-marker actueel en dupliceervrij i.p.v. een
+  // eenmalige, verouderende marker (gemeld: bleef grijs/verouderd staan nadat de gebruiker elders
+  // op de kaart verder was gegaan, en verscheen soms dubbel -- net niet overlappend -- naast de
+  // straal-marker van hetzelfde monument). Hertekent bij elke straal-wijziging met de actuele
+  // kleur/score, en slaat de marker over als het monument toch al in de straal-resultaten zit.
+  function renderMonSearchMarker(straalMonumenten) {
+    monSearchLayer.clearLayers();
+    var m = state.lastMonSearch;
+    if (!m) return;
+    var alreadyShown = (straalMonumenten || []).some(function (sm) { return sm.nr === m.nr; });
+    if (alreadyShown) return;
+    // m.distKm is altijd null (de nummer-opzoeking heeft geen afstandsfilter/-berekening) --
+    // zonder dit opnieuw te berekenen tov het actuele epicentrum blijft impactScore() altijd null
+    // en de marker dus permanent grijs, ongeacht latere epicentrum-selecties (precies de bug die
+    // hier gefixt wordt: de marker moet meebewegen met de actuele selectie).
+    var mWithDist = m;
+    if (state.selected) {
+      mWithDist = Object.assign({}, m, {
+        distKm: haversineKm(state.selected.lat, state.selected.lon, m.lat, m.lon)
+      });
+    }
+    buildMonumentMarker(mWithDist).addTo(monSearchLayer);
   }
 
   function populatePlaceList() {
@@ -969,22 +1009,28 @@
         return;
       }
 
-      statusEl.innerHTML = '<span class="loading">Rijksmonument opzoeken…</span>';
+      statusEl.innerHTML = loadingHtml("Rijksmonument opzoeken…");
       try {
         var bindings = await sparqlSelect(MON_ENDPOINT, buildMonumentByNumberQuery(raw));
         var matches = mapMonumentByNumberBindings(bindings);
         if (!matches.length) {
           statusEl.innerHTML = '<span class="placeholder">Geen geldig rijksmonument gevonden met nummer ' + escapeHtml(raw) + ' (mogelijk een ongeldig nummer, of een andere status dan "rijksmonument").</span>';
-          monSearchLayer.clearLayers();
+          state.lastMonSearch = null;
+          renderMonSearchMarker(null);
           return;
         }
         var m = matches[0];
 
-        monSearchLayer.clearLayers();
-        var marker = buildMonumentMarker(m);
-        marker.addTo(monSearchLayer);
+        // Bewaard in state (i.p.v. alleen eenmalig getekend) zodat de marker meegroeit met latere
+        // straal-/epicentrum-wijzigingen: renderMonSearchMarker() wordt bij elke renderMonuments()
+        // opnieuw aangeroepen, houdt 'm actueel qua kleur, en slaat 'm over zodra dezelfde
+        // rijksmonumentnummer al in de straal-resultaten zit (voorkomt een dubbele/verouderde
+        // marker, gemeld door de gebruiker).
+        state.lastMonSearch = m;
+        renderMonSearchMarker(null);
         map.setView([m.lat, m.lon], 15);
-        marker.openPopup();
+        var searchMarkers = monSearchLayer.getLayers();
+        if (searchMarkers.length) searchMarkers[0].openPopup();
 
         var nearest = nearestEarthquake(m.lat, m.lon);
         var resultHtml = '<div class="eq-info">' +
@@ -1015,6 +1061,13 @@
 
     $("monNrSearchBtn").addEventListener("click", trySearch);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") trySearch(); });
+
+    $("monNrResetBtn").addEventListener("click", function () {
+      input.value = "";
+      statusEl.innerHTML = "";
+      state.lastMonSearch = null;
+      renderMonSearchMarker(null);
+    });
   }
 
   function initSlider() {

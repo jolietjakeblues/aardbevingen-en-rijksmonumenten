@@ -9,13 +9,32 @@ en technische details per onderwerp: zie `documentation/`.
 De volledige roadmap-checklist naar deze release is afgerond (zie v0.19.0 t/m v0.19.5 hieronder):
 impactindicatie-hernoeming en schijnprecisie, ingebouwde uitleg, het faden van niet-geselecteerde
 aardbevingen, cross-browser/mobiel testen (inclusief een gevonden en gefixte legenda-bug), en de
-kleurenblindheid-check (inclusief een gefixt rood/groen-contrastprobleem). Verder ongewijzigd
-t.o.v. v0.19.5 - deze versie markeert het moment waarop de applicatie voor het eerst als
-officiële, publieke release wordt getagd, niet een nieuwe functionele wijziging.
+kleurenblindheid-check (inclusief een gefixt rood/groen-contrastprobleem).
 
 **Bewust nog niet gedaan, uitgesteld tot de 2e release**: aanvullende validatie van de
 impactindicatie (zie `documentation/DEVELOPMENT.md`, "Roadmap") - een onderzoekstaak die meer
 tijd en inlezen vergt dan de rest van deze checklist.
+
+**Aanvullend gefixt vóór het taggen** (gevonden bij hands-on gebruik van de rijksmonumentnummer-
+zoekfunctie): de `monSearchLayer`-marker werd maar één keer getekend en daarna nooit meer
+bijgewerkt of verwijderd, waardoor een opgezocht monument permanent grijs (verouderd) bleef staan
+en soms dubbel verscheen naast de straal-marker van hetzelfde monument (net niet overlappend, want
+andere brongeometrie: WKT-punt vs. polygooncentrum). Root cause bleek dubbel: (1) er was geen
+enkel moment waarop de laag werd opgeruimd, en (2) `buildMonumentMarker()` kon de kleur sowieso
+nooit bijwerken omdat het opgezochte monument-object altijd `distKm: null` had (geen
+afstandsfilter in de nummer-query) - `impactScore()` gaf daardoor altijd `null` terug, ongeacht
+welk epicentrum actief was. Opgelost met een nieuwe `renderMonSearchMarker()`, die: (a) de
+afstand tot het actuele epicentrum alsnog berekent (`haversineKm`) zodat de kleur meebeweegt met
+latere epicentrum-selecties, en (b) de marker overslaat zodra hetzelfde rijksmonumentnummer al in
+de straal-resultaten zit (voorkomt de dubbele marker). Verder een "Wis"-knop toegevoegd om het
+zoekresultaat (marker, statustekst, invoerveld) handmatig te legen, en een zichtbare
+laad-spinner (i.p.v. alleen cursieve tekst) voor alle asynchrone acties (aardbevingen laden,
+rijksmonumenten binnen straal, nummer-opzoeking) - met `prefers-reduced-motion`-uitzondering.
+Alle drie live geverifieerd: de marker bleef zichtbaar en veranderde kleur na een nieuwe,
+verre epicentrum-selectie (geen "vast grijs" meer), verdween correct zodra hetzelfde monument al
+in de straal-resultaten zat (448 → 447, gelijk aan het aantal in de statustekst), en de "Wis"-knop
+verwijderde de marker exact (448 → 447 na klikken, terwijl de straal-resultaten ongewijzigd
+bleven).
 
 ## v0.19.5 - mobiele legenda-bug + kleurenblindheid-fix
 

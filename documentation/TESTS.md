@@ -74,6 +74,9 @@ licht verschuiven als de brondata verandert.
 | 8.3 | Voer "abc123" in | "Vul een rijksmonumentnummer in van alleen cijfers." - geen query wordt uitgevoerd |
 | 8.4 | Voer een niet-bestaand nummer in, bv. "999999999" | "Geen geldig rijksmonument gevonden met nummer 999999999 (...)" |
 | 8.5 | Wijzig daarna de straal-slider (met een epicentrum al actief) | De opgezochte monument-marker blijft staan (eigen laag, wordt niet gewist door `renderMonuments()`) |
+| 8.6 | Zoek "26265" zonder dat er een epicentrum actief is (grijze marker), selecteer daarna een epicentrum ver weg (buiten bereik van dat monument) | De marker verdwijnt niet en wordt niet meer grijs - kleur wordt opnieuw berekend tov het nieuwe epicentrum (regressietest voor de "blijft grijs"-bug) |
+| 8.7 | Zoek "26265", selecteer daarna (via plaatsnaam of klik) een epicentrum waarvan de straal dit monument wél bevat | Het monument verschijnt maar ÉÉN keer op de kaart (totaal aantal iconen = het aantal in "Rijksmonumenten binnen straal"), geen dubbele/verschoven marker |
+| 8.8 | Klik "Wis" na een zoekopdracht | Invoerveld, resultaattekst en marker worden allemaal geleegd; als de marker een "extra" marker was (niet gededupliceerd), daalt het totaal aantal iconen met precies 1 |
 
 ## 9. Automatisch in-/uitzoomen
 

@@ -106,6 +106,26 @@ die is bewust uitgesteld naar het onderzoekstraject voor de 2e officiële releas
 - **Validatie van de impactindicatie** (roadmap-item 3 hierboven, uitgesteld) - de gebruiker leest
   zich hier eerst zelf op in voordat het onderzoek wordt opgepakt. Nog geen tijdsinschatting.
 
+## Gemeld door de gebruiker: rijksmonumentnummer-zoeken - opgelost (vóór v0.20.0-release)
+
+Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
+
+- ~~**Bug: dubbele/verouderde marker.**~~ - **gefixt.** Root cause was dubbel: (1) `monSearchLayer`
+  werd nooit opnieuw getekend of geleegd na het moment van zoeken, en (2) het opgezochte
+  monument-object had altijd `distKm: null` (geen afstandsfilter in de nummer-query), waardoor
+  `impactScore()` sowieso altijd `null` teruggaf - de marker kon dus NOOIT van kleur veranderen,
+  ongeacht welk epicentrum actief was. Opgelost met een nieuwe `renderMonSearchMarker()`,
+  aangeroepen vanuit `renderMonuments()` (dus bij elke straal-/epicentrum-wijziging): berekent
+  `distKm` opnieuw tov het actuele epicentrum (`haversineKm`) en slaat de marker over zodra
+  hetzelfde rijksmonumentnummer al in de straal-resultaten zit. Live geverifieerd: marker bleef
+  zichtbaar en van kleur veranderd na een verre epicentrum-selectie (448 iconen, geen grijs meer);
+  correct overgeslagen zodra het monument alsnog in de straal viel (614 = 614, geen dubbele).
+- ~~**Verzoek: reset/wis-knop**~~ - **gedaan.** Nieuwe knop `#monNrResetBtn` naast Zoek, leegt
+  `monSearchLayer`, `monNrStatus` en het invoerveld. Live geverifieerd: 448 → 447 iconen na klikken.
+- ~~**Verzoek: zichtbare laad-indicator**~~ - **gedaan.** Nieuwe `loadingHtml()`-helper (draaiende
+  CSS-spinner + tekst, met `prefers-reduced-motion`-uitzondering) vervangt de eerdere kale
+  `.loading`-tekst overal: aardbevingen laden, rijksmonumenten binnen straal, nummer-opzoeking.
+
 ## Mogelijke uitbreidingen (later)
 
 - ~~Visuele markering voor rijksmonumenten in het officiële RCE-versterkingsprogramma~~ -
