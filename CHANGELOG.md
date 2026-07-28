@@ -4,6 +4,15 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.19.4 - handmatige testchecklist
+
+Nieuw: `documentation/TESTS.md`, een handmatige testchecklist (13 secties, van KNMI-laadgedrag
+tot responsiviteit) met concrete, al geverifieerde voorbeeldwaarden (plaatsnamen, monumentnummers)
+om na een wijziging snel te kunnen controleren of alles nog werkt. Geen testframework - dit
+project heeft geen build-stap en leunt op live externe data, dus geautomatiseerde tests zouden
+vooral de live bronnen zelf testen, niet de eigen code. README verwijst er nu naar vanuit
+"Lokaal draaien".
+
 ## v0.19.3 - zoeken op rijksmonumentnummer
 
 Nieuw paneel "Zoek op rijksmonumentnummer": toont de locatie van het opgezochte monument (marker

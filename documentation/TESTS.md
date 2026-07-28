@@ -1,0 +1,120 @@
+# Handmatige testchecklist
+
+Geen build-stap, geen testframework - dit is een checklist om na een wijziging handmatig (of via
+de browser-tools) te controleren of alles nog werkt zoals bedoeld. Open `docs/index.html` lokaal
+(zie README, "Lokaal draaien") en loop de secties langs. Concrete voorbeeldwaarden (plaatsnamen,
+monumentnummers) zijn al eerder tegen de live data geverifieerd, maar de exacte aantallen kunnen
+licht verschuiven als de brondata verandert.
+
+## 1. Aardbevingen laden (KNMI)
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 1.1 | Pagina laden, wachten tot "Selecteer een epicentrum om statistieken te zien" verschijnt | Geen foutmelding; geen "Let op: niet geladen"-waarschuwing |
+| 1.2 | Tel markers op de kaart (bv. via `document.querySelectorAll('path.leaflet-interactive').length`) | ~3.750 markers (induced + tectonic samen), geen van beide categorieën ontbreekt |
+| 1.3 | Herhaal 1.1-1.2 een paar keer kort na elkaar (test de KNMI-cold-start-fix) | Beide categorieën laden consistent, ook als het de eerste request in een tijdje is (timeout 35s + automatische herkansing) |
+
+## 2. Rijksmonumenten binnen straal
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 2.1 | Zoek op plaats "Loppersum", straal 25 km | Epicentrum bij Loppersum; "Rijksmonumenten binnen straal" toont een getal met opsplitsing "X onroerend gebouwd; Y archeologisch" |
+| 2.2 | Vergroot de straal naar 200 km in een dichte regio (bv. rond Amsterdam) | Tekst "minstens 400 onroerend gebouwd; alleen de 400 dichtstbijzijnde getoond" verschijnt |
+| 2.3 | Zoek een archeologisch monument (bv. "Scheepswrak aanloop Molengat", nr. 532450, bij Den Helder) op straal ≥60 km vanaf een naburig epicentrum | Het scheepswrak verschijnt als schop-icoon, ook bij ver uitgezoomde weergave |
+
+## 3. Impactindicatie
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 3.1 | Klik een monument-popup open na epicentrum-selectie | "Impactindicatie ⓘ: X.X (binnen/buiten indicatief effectgebied)" - **1 decimaal**, geen 2 |
+| 3.2 | Hover/focus het ⓘ-icoon | Tooltip "Verkennende indicatie, geen schadebeoordeling." |
+| 3.3 | Selecteer een diepe (>5 km) beving, bv. via een plaatsnaam die een tektonische beving oplevert | Popup toont extra waarschuwing "let op: diepe beving, kalibratie minder betrouwbaar op afstand" |
+| 3.4 | Vergelijk kleur met score: score ≥ 1 rood, 0 ≤ score < 1 oranje, score < 0 groen | Kleuren kloppen met de legenda |
+
+## 4. Iconen en versterkingsprogramma-ring
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 4.1 | Zoek op rijksmonumentnummer 26265 (Loppersum, Petrus en Pauluskerk) | Huisje-icoon met een paarse stippelring; popup toont "● In het officiële RCE-versterkingsprogramma" |
+| 4.2 | Zoek een willekeurig gebouwd monument dat NIET in de lijst van 140 nummers zit | Huisje-icoon zonder ring, geen versterkingsprogramma-regel in de popup |
+| 4.3 | Open de legenda | Toont apart: huisje (onroerend gebouwd), schop (archeologisch), paarse stippelring (versterkingsprogramma) |
+
+## 5. Tijdslider
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 5.1 | Sleep het linker- en rechterhandvat naar bv. 1986-2011 | `#timeYearLabel` toont "1986–2011"; alleen bevingen in dat venster zichtbaar op de kaart |
+| 5.2 | Klik "Afspelen" | Rechterhandvat schuift op, linkerhandvat blijft vast, animatie stopt bij het laatste jaar |
+| 5.3 | Klik "toon alles" | Beide handvatten terug naar de volledige range, alle bevingen weer zichtbaar |
+| 5.4 | Zoek op plaats terwijl er een tijdvenster actief is | Tijdvenster wordt automatisch teruggezet naar "alles" zodat het zoekresultaat zichtbaar is |
+| 5.5 | Selecteer een epicentrum terwijl er een tijdvenster actief is | Straal-statistieken en impactindicatie blijven op de volledige dataset gebaseerd (niet beperkt door het tijdvenster) |
+
+## 6. Faden van niet-geselecteerde aardbevingen
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 6.1 | Klik een aardbeving-marker in een dichte cluster (bv. rond Loppersum) | Alle overige markers krijgen een lage dekking (fillOpacity 0,15); de geklikte marker blijft vol zichtbaar (0,85) en ligt bovenop |
+| 6.2 | Klik daarna een andere beving | De eerder geselecteerde vervaagt mee, de nieuwe wordt vol zichtbaar |
+| 6.3 | Vóór elke selectie (verse pagina) | Alle markers op volle dekking, geen fade-effect |
+
+## 7. Zoek op plaats
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 7.1 | Typ "Loppersum" en druk Enter (of verlaat het veld) | Springt naar de meest recente beving met dat toponiem; kaart zoomt naar niveau 12 |
+| 7.2 | Typ een niet-bestaande plaatsnaam | "Geen aardbeving gevonden bij deze plaatsnaam." |
+| 7.3 | Typ een gedeeltelijke naam | Valt terug op een prefix-match als er geen exacte match is |
+
+## 8. Zoek op rijksmonumentnummer
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 8.1 | Voer "26265" in, klik Zoek | Kaart pant/zoomt naar Loppersum (Petrus en Pauluskerk), popup opent automatisch; resultaattekst toont dichtstbijzijnde beving "27-10-2007 · M2.0 · 0.1 km" (of actuelere data als de dataset ondertussen is bijgewerkt) |
+| 8.2 | Klik "Selecteer deze aardbeving als epicentrum" | Epicentrum wordt Loppersum M2.0; straal-statistieken en monumentenlijst verschijnen zoals bij een normale klik-selectie |
+| 8.3 | Voer "abc123" in | "Vul een rijksmonumentnummer in van alleen cijfers." - geen query wordt uitgevoerd |
+| 8.4 | Voer een niet-bestaand nummer in, bv. "999999999" | "Geen geldig rijksmonument gevonden met nummer 999999999 (...)" |
+| 8.5 | Wijzig daarna de straal-slider (met een epicentrum al actief) | De opgezochte monument-marker blijft staan (eigen laag, wordt niet gewist door `renderMonuments()`) |
+
+## 9. Automatisch in-/uitzoomen
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 9.1 | Selecteer een epicentrum | Kaart zoomt automatisch naar de straal-cirkel (`fitBounds`) |
+| 9.2 | Verander de straal-slider | Kaart past de zoom opnieuw aan; bij een straal van 1-2 km blijft de zoom begrensd op maxZoom 16 (niet absurd ver ingezoomd) |
+
+## 10. Hulp / uitleg
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 10.1 | Verse pagina, nog geen epicentrum gekozen | "Geselecteerd epicentrum"-paneel toont de 3 gebruiksstappen i.p.v. een lege placeholder |
+| 10.2 | Klik "Hoe werkt deze kaart?" | Uitklapblok met dezelfde 3 stappen opent; `aria-expanded` gaat naar `true` |
+| 10.3 | Klik nogmaals | Uitklapblok sluit weer |
+
+## 11. Achtergrondpagina
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 11.1 | Klik de footer-link "Achtergrond: waarom aardbevingen en rijksmonumenten?" | `docs/achtergrond.html` opent, geen console-errors |
+| 11.2 | Klik "← Terug naar de kaart" | Terug naar `docs/index.html` |
+| 11.3 | Controleer alle links onder "Meer lezen (RCE-bronnen)" | Elke link geeft HTTP 200 (steekproefsgewijs met curl of de browserconsole) |
+
+## 12. Responsief / mobiel
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 12.1 | Resize naar 375px breed | Zijbalk stapelt boven de kaart (max 45dvh), geen horizontale overflow (`document.body.scrollWidth === window.innerWidth`) |
+| 12.2 | Resize naar 768px breed | Zijbalk en kaart naast elkaar, beide bruikbaar, geen overflow |
+| 12.3 | (Nog niet gedaan, staat op de roadmap) Test op een echt mobiel toestel en in Firefox/Safari | - |
+
+## 13. Robuustheid bij falende bronnen
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 13.1 | Simuleer een falende KNMI- of RCE-request (bv. offline zetten van één endpoint via devtools request-blocking) | De andere bron blijft werken; statusregel toont welk deel ontbreekt i.p.v. dat de hele pagina crasht |
+| 13.2 | Blokkeer beide aardbevingsbronnen tegelijk | Duidelijke foutmelding "Kon aardbevingsdata niet laden: ..." i.p.v. een stille lege kaart |
+
+## Niet-gedekt door deze checklist
+
+- Kleurenblindheid-check op het rood/oranje/groen-stoplicht (roadmap-item, nog niet gedaan).
+- Geautomatiseerde tests (geen testframework in dit project - alles is handmatige/browser-tool-
+  verificatie, zie ook de sessiegeschiedenis in CHANGELOG.md).

@@ -6,7 +6,7 @@ geen schadebeoordeling.
 
 **Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
-Huidige versie: 0.19.3 (ontwikkelversie, nog geen officiële GitHub Release) - zie
+Huidige versie: 0.19.4 (ontwikkelversie, nog geen officiële GitHub Release) - zie
 [CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
 
 Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
@@ -70,6 +70,8 @@ Geen build-stap nodig. Twee opties:
    python -m http.server 8000
    ```
    en open `http://localhost:8000/docs/index.html`.
+
+Handmatige testchecklist na een wijziging: zie [documentation/TESTS.md](documentation/TESTS.md).
 
 ## Licentie
 
