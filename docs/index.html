@@ -124,6 +124,11 @@
     }
     #mapPane { min-height: 55dvh; }
     .legend-control { max-width: min(230px, calc(100vw - 30px)); }
+    /* Bug (gevonden bij mobiel testen): de uitgeklapte legenda-body kon hoger worden dan de
+       kaartpane zelf (55dvh) - Leaflet's control groeit dan omhoog voorbij de bovenkant van #map
+       (overflow:hidden), waardoor zelfs de "Legenda"-knop zelf buiten het klikbare kaartgebied
+       terechtkwam en niet meer te sluiten was. Vaste max-hoogte + scroll voorkomt dat. */
+    .legend-control-body { max-height: 35dvh; overflow-y: auto; }
     #timebar { padding: 8px 10px; gap: 7px; }
     #timeYearLabel { min-width: 68px; }
   }
@@ -210,7 +215,7 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.19.4
+      Applicatieversie 0.20.0
     </footer>
   </div>
   <div id="mapPane">
@@ -252,7 +257,13 @@
   var MONUMENT_STROKE = "#222222";
   var MONUMENT_COLOR_IN = "#c0392b";
   var MONUMENT_COLOR_NET = "#e67e22";
-  var MONUMENT_COLOR_OUT = "#2e7d32";
+  // Kleurenblindheid-check (Machado et al. 2009-matrices, dezelfde als Chrome's eigen "Emulate
+  // vision deficiencies"): het oorspronkelijke groen (#2e7d32) lag bij deuteranopie (de meest
+  // voorkomende vorm) nagenoeg boven op rood (RGB-afstand 13 van de ~440 mogelijke) -- rood en
+  // groen werden dus vrijwel identiek. Vervangen door Okabe & Ito's "bluish green" (#009E73, uit
+  // hun veelgeciteerde kleurenblind-veilige palet), dat voor gewoon zicht nog steeds als "groen"
+  // leest maar de rood/groen-afstand bij deuteranopie naar 78 en bij protanopie naar 115 brengt.
+  var MONUMENT_COLOR_OUT = "#009E73";
   var MONUMENT_COLOR_UNKNOWN = "#999999";
   var MONUMENT_ICON_PX = 16; // vaste pixelgrootte, ECHT zoom-onafhankelijk (i.t.t. graden: een
   // rectangle van vaste graden-breedte krimpt bij uitzoomen tot onder 1 pixel en wordt onzichtbaar,

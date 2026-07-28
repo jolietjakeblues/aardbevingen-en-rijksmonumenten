@@ -104,9 +104,18 @@ licht verschuiven als de brondata verandert.
 |---|---|---|
 | 12.1 | Resize naar 375px breed | Zijbalk stapelt boven de kaart (max 45dvh), geen horizontale overflow (`document.body.scrollWidth === window.innerWidth`) |
 | 12.2 | Resize naar 768px breed | Zijbalk en kaart naast elkaar, beide bruikbaar, geen overflow |
-| 12.3 | (Nog niet gedaan, staat op de roadmap) Test op een echt mobiel toestel en in Firefox/Safari | - |
+| 12.3 | Selecteer op 375px breed een epicentrum, open de legenda | Legenda past binnen de kaartpane (`.legend-control-body` heeft `max-height: 35dvh` + scroll); de "Legenda"-knop blijft altijd binnen het klikbare kaartgebied en is opnieuw te sluiten (regressietest voor de v0.19.5-bug: de knop kon boven de kaartpane uitgroeien en werd dan onklikbaar) |
+| 12.4 | Test in Chrome, Firefox en Safari | Alles werkt (bevestigd door de gebruiker, v0.19.5) |
+| 12.5 | Test op een echt mobiel toestel | Nog niet expliciet gedaan buiten de resize-tool |
 
-## 13. Robuustheid bij falende bronnen
+## 13. Kleurenblindheid
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 13.1 | Simuleer deuteranopie/protanopie/tritanopie (bv. via Chrome devtools "Emulate vision deficiencies", of een online simulator) op de legenda-kleurvlakjes | Rood, oranje en het (sinds v0.19.5) aangepaste groen (#009E73) blijven van elkaar te onderscheiden - rood en groen liggen niet meer nagenoeg op elkaar zoals bij het oorspronkelijke groen (#2e7d32) het geval was bij deuteranopie |
+| 13.2 | Controleer de legenda-kleurvlakjes-hex via devtools | Groen-vlakje toont `rgb(0, 158, 115)` (#009E73), niet meer `rgb(46, 125, 50)` |
+
+## 14. Robuustheid bij falende bronnen
 
 | # | Stap | Verwacht resultaat |
 |---|---|---|
@@ -115,6 +124,6 @@ licht verschuiven als de brondata verandert.
 
 ## Niet-gedekt door deze checklist
 
-- Kleurenblindheid-check op het rood/oranje/groen-stoplicht (roadmap-item, nog niet gedaan).
+- Een echt mobiel toestel (buiten de browser-resize-tool om).
 - Geautomatiseerde tests (geen testframework in dit project - alles is handmatige/browser-tool-
   verificatie, zie ook de sessiegeschiedenis in CHANGELOG.md).

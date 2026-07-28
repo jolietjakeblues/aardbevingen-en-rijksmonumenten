@@ -9,7 +9,7 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.19.4.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.19.4.html`
+- `aardbevingen_en_rijksmonumenten_v0.20.0.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.0.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -28,22 +28,35 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
   horizontale overflow meer (`document.body.scrollWidth === window.innerWidth`).
 - **Tablet (768px breed): bruikbaar**, zijbalk en kaart zijn beide zichtbaar, geen overflow.
 - **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
-  geselecteerd - dat kan rommelig ogen bij een dichte cluster. Besloten (i.p.v. de geselecteerde
-  beving apart te markeren): de NIET-geselecteerde bevingen faden/dimmen zodra er een epicentrum
-  actief is - zie roadmap-item 4 hieronder.
+  geselecteerd - dat kan rommelig ogen bij een dichte cluster. Opgelost sinds v0.19.2: de
+  NIET-geselecteerde bevingen faden zodra er een epicentrum actief is.
 - De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
   timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
   (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
-- Alleen getest in een Chromium-gebaseerde browser (preview-omgeving); Firefox, Safari en een
-  echt mobiel toestel nog niet expliciet geverifieerd.
-- Kleurenblindheid-check op het rood/oranje/groen-stoplicht is nog niet gedaan.
+- **Cross-browser: gedaan.** Chrome, Firefox en Safari getest door de gebruiker - alles werkt.
+  **Mobiel: bug gevonden en gefixt (v0.19.5).** De uitgeklapte legenda kon hoger worden dan de
+  kaartpane zelf; Leaflet's bottom-anchored control groeide dan omhoog voorbij de bovenkant van
+  `#map` (dat `overflow:hidden` heeft), waardoor zelfs de "Legenda"-knop buiten het klikbare
+  kaartgebied kwam en niet meer te sluiten was - een tik op die plek raakte in plaats daarvan een
+  zijbalk-paneel eronder. Root cause bevestigd via `elementFromPoint()`/`getBoundingClientRect()`
+  op een 375px-viewport. Fix: `.legend-control-body { max-height: 35dvh; overflow-y: auto; }` in
+  de mobiele media query, zodat de legenda nooit meer boven de kaartpane kan uitgroeien. Alleen
+  op desktop (>700px) blijft de legenda onbegrensd (`max-height: none`), geen regressie daar.
+- **Kleurenblindheid-check: gedaan (v0.19.5).** Gesimuleerd met de Machado et al. (2009)-matrices
+  (dezelfde die Chrome's eigen "Emulate vision deficiencies" gebruikt) op de drie stoplicht-
+  kleuren. Uitkomst: bij deuteranopie (de meest voorkomende vorm, ~5% van mannen) lagen rood
+  (#c0392b) en het oorspronkelijke groen (#2e7d32) nagenoeg op elkaar (RGB-afstand 13 van de
+  ~440 mogelijke) - vrijwel niet te onderscheiden. Bij protanopie was het verschil ook mager (61).
+  Opgelost door groen te vervangen door Okabe & Ito's "bluish green" (#009E73, uit hun bekende
+  kleurenblind-veilige palet): voor gewoon zicht nog steeds duidelijk "groen", maar de afstand tot
+  rood loopt op naar 78 (deuteranopie) en 115 (protanopie). Rood en oranje bleven in alle gevallen
+  goed te onderscheiden, dus alleen groen is aangepast.
 
 Zie ook [DATA.md](DATA.md) voor de dataspecifieke beperkingen (query-limieten, veldvulling).
 
-## Roadmap naar v0.20.0 (beoogde eerste publieke release)
+## Roadmap naar v0.20.0 (eerste officiële release) - AFGEROND
 
-Checklist die eerst afgerond wordt voordat v0.20.0 als eerste officiële publieke release getagd
-wordt:
+Checklist die is afgerond voordat v0.20.0 als eerste officiële publieke release is getagd:
 
 1. ~~**Hernoem "impactscore" naar "impactindicatie"**~~ - **gedaan** (v0.19.0): term aangepast
    door de hele interface (legenda, popup) en documentatie (README, IMPACTSCORE.md,
@@ -79,10 +92,21 @@ wordt:
    `renderSelectedInfo()`); en een info-icoon (ⓘ, met `title`-tooltip) staat nu naast
    "Impactindicatie" in zowel de legenda-hint als de monument-popup. Bewust geen verplichte popup
    bij het laden. Live geverifieerd, geen console-errors.
-6. **Cross-browser en mobiel testen**: Chrome, Firefox, Safari en een echt mobiel toestel.
-7. **Kleurenblindheid-check** op het rood/oranje/groen-stoplicht.
+6. ~~**Cross-browser en mobiel testen**~~ - **gedaan** (v0.19.5): Chrome/Firefox/Safari getest
+   (werkt), plus een echte mobiel-bug gevonden en gefixt (zie "Bekende beperkingen" hierboven).
+7. ~~**Kleurenblindheid-check**~~ - **gedaan** (v0.19.5): een echt probleem gevonden (rood/groen
+   vrijwel identiek bij deuteranopie) en gefixt door groen te vervangen door een
+   kleurenblind-veilige variant (zie "Bekende beperkingen" hierboven).
 
-## Mogelijke uitbreidingen (na v0.20.0)
+Alle zeven checklist-punten zijn afgerond, **op punt 3 (validatie van de impactindicatie) na** -
+die is bewust uitgesteld naar het onderzoekstraject voor de 2e officiële release (zie hieronder).
+
+## Roadmap naar de 2e officiële release
+
+- **Validatie van de impactindicatie** (roadmap-item 3 hierboven, uitgesteld) - de gebruiker leest
+  zich hier eerst zelf op in voordat het onderzoek wordt opgepakt. Nog geen tijdsinschatting.
+
+## Mogelijke uitbreidingen (later)
 
 - ~~Visuele markering voor rijksmonumenten in het officiële RCE-versterkingsprogramma~~ -
   **gedaan** (v0.19.0), optie (a) puur informatief gekozen (niet een filter): monumenten waarvan
@@ -120,9 +144,8 @@ wordt:
 
 ## Open beslissingen
 
-- **Besloten: de versioned-snapshot-conventie blijft**, en is in v0.19.0 rechtgezet (zie
-  Bestandsstructuur hierboven): een bijgewerkt, versienummerd paar
-  (`aardbevingen_en_rijksmonumenten_v0.19.0.html` + `..._achtergrond_v0.19.0.html`), onderling
-  zelfstandig gelinkt.
-- Wanneer/of er een officiële GitHub Release getagd wordt - tot die tijd is elke versie in
-  [CHANGELOG.md](../CHANGELOG.md) een ontwikkelversie, geen release.
+- **Besloten: de versioned-snapshot-conventie blijft** (zie Bestandsstructuur hierboven): een
+  bijgewerkt, versienummerd paar per versie, onderling zelfstandig gelinkt.
+- **Besloten: v0.20.0 is de eerste officiële release.** Alle bestanden zijn klaargezet
+  (versienummers, CHANGELOG, snapshot-paar); het daadwerkelijke taggen/publiceren van de GitHub
+  Release doet de gebruiker zelf.

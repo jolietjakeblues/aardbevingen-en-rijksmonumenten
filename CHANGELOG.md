@@ -4,6 +4,36 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.20.0 - eerste officiële release
+
+De volledige roadmap-checklist naar deze release is afgerond (zie v0.19.0 t/m v0.19.5 hieronder):
+impactindicatie-hernoeming en schijnprecisie, ingebouwde uitleg, het faden van niet-geselecteerde
+aardbevingen, cross-browser/mobiel testen (inclusief een gevonden en gefixte legenda-bug), en de
+kleurenblindheid-check (inclusief een gefixt rood/groen-contrastprobleem). Verder ongewijzigd
+t.o.v. v0.19.5 - deze versie markeert het moment waarop de applicatie voor het eerst als
+officiële, publieke release wordt getagd, niet een nieuwe functionele wijziging.
+
+**Bewust nog niet gedaan, uitgesteld tot de 2e release**: aanvullende validatie van de
+impactindicatie (zie `documentation/DEVELOPMENT.md`, "Roadmap") - een onderzoekstaak die meer
+tijd en inlezen vergt dan de rest van deze checklist.
+
+## v0.19.5 - mobiele legenda-bug + kleurenblindheid-fix
+
+Twee van de laatste drie punten op de roadmap naar v0.20.0 afgerond. **Mobiele bug** (gevonden
+tijdens cross-browser/mobiel testen door de gebruiker: "de legenda sluit niet meer"): de
+uitgeklapte legenda kon hoger worden dan de kaartpane zelf, waardoor Leaflet's bottom-anchored
+control omhoog groeide voorbij de bovenkant van `#map` (`overflow:hidden`) en de "Legenda"-knop
+buiten het klikbare kaartgebied belandde - een tik daar raakte in plaats daarvan een
+zijbalk-paneel eronder. Root cause bevestigd via `elementFromPoint()`. Fix: begrensde hoogte met
+scroll (`max-height: 35dvh; overflow-y: auto`) in de mobiele media query, alleen op mobiel.
+**Kleurenblindheid-check**: gesimuleerd met de Machado et al. (2009)-matrices (zelfde als Chrome's
+"Emulate vision deficiencies"). Rood en het oorspronkelijke groen bleken bij deuteranopie (de
+meest voorkomende vorm) vrijwel identiek. Groen vervangen door Okabe & Ito's kleurenblind-veilige
+"bluish green" (#009E73) - blijft voor gewoon zicht duidelijk groen, lost het probleem op.
+Cross-browser testen (Chrome/Firefox/Safari) door de gebruiker: geen problemen gevonden. Daarmee
+is de volledige roadmap-checklist naar v0.20.0 afgerond, op de bewust uitgestelde validatie van de
+impactindicatie na (die schuift door naar het onderzoekstraject voor de 2e officiële release).
+
 ## v0.19.4 - handmatige testchecklist
 
 Nieuw: `documentation/TESTS.md`, een handmatige testchecklist (13 secties, van KNMI-laadgedrag
