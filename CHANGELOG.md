@@ -36,6 +36,24 @@ in de straal-resultaten zat (448 → 447, gelijk aan het aantal in de statusteks
 verwijderde de marker exact (448 → 447 na klikken, terwijl de straal-resultaten ongewijzigd
 bleven).
 
+**Nog een bug gevonden en gefixt** (eveneens bij hands-on gebruik): de aardbevingen-popup
+verscheen niet meer na een klik. Root cause: `selectEpicenter()` riep sinds de fade-feature
+(v0.19.2) bij elke klik `renderEarthquakeMarkers()` aan, wat `eqLayer.clearLayers()` deed en dus
+ELKE marker (inclusief de zojuist door Leaflet's eigen click-to-open-popup geopende) meteen
+vernietigde en verving door een nieuwe, ongeopende instantie. Opgelost door de fade-toepassing te
+ontkoppelen van het opnieuw opbouwen van de laag: een nieuwe `updateEarthquakeFade()` past
+`setStyle()`/`bringToFront()` toe op de BESTAANDE marker-instanties (elke marker onthoudt zijn
+eigen event via `marker.__ev`) i.p.v. ze te vernietigen en opnieuw te tekenen.
+`renderEarthquakeMarkers()` (volledige heropbouw) blijft gebruikt bij initieel laden en
+tijdslider-wijzigingen, waar de zichtbare verzameling bevingen echt verandert. Live geverifieerd:
+twee opeenvolgende klikken op verschillende bevingen tonen allebei correct hun eigen popup, en de
+faded/niet-faded verdeling (3.749 / 1) blijft kloppen.
+
+Tot slot een korte disclaimer toegevoegd aan de footer van zowel `docs/index.html` als
+`docs/achtergrond.html`: "Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE.
+Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend." -
+zodat ook bezoekers van de live pagina's (niet alleen lezers van de README) deze zien.
+
 ## v0.19.5 - mobiele legenda-bug + kleurenblindheid-fix
 
 Twee van de laatste drie punten op de roadmap naar v0.20.0 afgerond. **Mobiele bug** (gevonden

@@ -117,6 +117,7 @@
   .eq-info b { color: var(--accent); }
   footer { font-size: 11px; color: var(--muted); line-height: 1.5; }
   footer a { color: #1a5276; }
+  .disclaimer { display: inline-block; margin-top: 6px; font-style: italic; }
   a { color: #1a5276; }
   .visually-hidden {
     position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -223,7 +224,8 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.20.0
+      Applicatieversie 0.20.0<br>
+      <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
   </div>
   <div id="mapPane">
@@ -687,6 +689,8 @@
       opacity: strokeOpacity,
       weight: 1
     });
+    marker.__ev = ev; // bewaard voor updateEarthquakeFade(), zodat bestaande markers hun eigen
+                      // event kunnen herkennen zonder de hele laag opnieuw te hoeven opbouwen
     var dateStr = ev.date ? new Date(ev.date).toLocaleDateString("nl-NL") : "onbekende datum";
     marker.bindTooltip(dateStr + (ev.mag !== null ? " · M" + ev.mag : ""));
     marker.bindPopup(
@@ -700,6 +704,7 @@
     );
     marker.on("click", function () { selectEpicenter(ev.lat, ev.lon, ev.mag, ev.depth, ev.place, ev); });
     marker.addTo(eqLayer);
+    return marker;
   }
 
   function renderEarthquakeMarkers() {
@@ -712,13 +717,33 @@
     // Bij een actieve selectie faden de overige bevingen (fillOpacity/opacity omlaag) i.p.v. de
     // geselecteerde apart te markeren -- voorkomt dat dichte clusters (Groningen, Limburg) de
     // gekozen beving overschreeuwen. De geselecteerde wordt als laatste getekend, dus zichtbaar
-    // bovenop de gefade cluster.
+    // bovenop de gefade cluster. Alleen gebruikt bij een volledige heropbouw (initieel laden,
+    // tijdslider-wijziging -- de zichtbare verzameling verandert dan echt); een kale
+    // selectie-wijziging gebruikt updateEarthquakeFade() zodat bestaande markers (en een eventueel
+    // al geopende popup) niet vernietigd worden.
     var selectedEv = null;
     visible.forEach(function (ev) {
       if (hasSelection && ev === state.selected.sourceEvent) { selectedEv = ev; return; }
       addEarthquakeMarker(ev, hasSelection ? 0.15 : 0.85, hasSelection ? 0.25 : 1);
     });
     if (selectedEv) addEarthquakeMarker(selectedEv, 0.85, 1);
+  }
+
+  // Bug (gevonden bij hands-on gebruik): renderEarthquakeMarkers() vanuit selectEpicenter()
+  // aanroepen deed eqLayer.clearLayers() bij elke klik, wat de zojuist door Leaflet's eigen
+  // click-to-open-popup geopende popup meteen weer vernietigde (nieuwe marker-instantie, popup
+  // dus dicht) -- de aardbeving-popup "verdween". Fix: bestaande markers alleen van stijl
+  // veranderen (setStyle + bringToFront), niet opnieuw aanmaken.
+  function updateEarthquakeFade() {
+    var hasSelection = !!(state.selected && state.selected.sourceEvent);
+    eqLayer.eachLayer(function (marker) {
+      var isSelected = hasSelection && marker.__ev === state.selected.sourceEvent;
+      marker.setStyle({
+        fillOpacity: isSelected || !hasSelection ? 0.85 : 0.15,
+        opacity: isSelected || !hasSelection ? 1 : 0.25
+      });
+      if (isSelected) marker.bringToFront();
+    });
   }
 
   function selectEpicenter(lat, lon, mag, depth, place, sourceEvent) {
@@ -732,7 +757,7 @@
     drawRadiusCircle();
     renderSelectedInfo();
     renderEqStats();
-    renderEarthquakeMarkers();
+    updateEarthquakeFade();
     fetchMonumentsDebounced();
   }
 

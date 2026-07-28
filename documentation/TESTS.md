@@ -56,6 +56,8 @@ licht verschuiven als de brondata verandert.
 | 6.1 | Klik een aardbeving-marker in een dichte cluster (bv. rond Loppersum) | Alle overige markers krijgen een lage dekking (fillOpacity 0,15); de geklikte marker blijft vol zichtbaar (0,85) en ligt bovenop |
 | 6.2 | Klik daarna een andere beving | De eerder geselecteerde vervaagt mee, de nieuwe wordt vol zichtbaar |
 | 6.3 | Vóór elke selectie (verse pagina) | Alle markers op volle dekking, geen fade-effect |
+| 6.4 | Klik een aardbeving-marker | De popup (toponiem, datum/tijd, magnitude, diepte, categorie) opent en blijft staan (regressietest: eerder verdween de popup meteen weer omdat de klik-handler de hele laag opnieuw opbouwde) |
+| 6.5 | Klik daarna een andere beving | De popup van de nieuw geklikte beving opent; fade-verdeling blijft kloppen |
 
 ## 7. Zoek op plaats
 
