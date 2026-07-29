@@ -20,7 +20,7 @@
     padding: 16px; box-sizing: border-box;
   }
   .logos-row { display:flex; align-items:center; gap:18px; margin-bottom:16px; }
-  .logos-row img { height:30px; width:auto; max-width:130px; object-fit:contain; display:block; }
+  .brand-logo { display:block; flex-shrink:0; }
   #mapPane { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
   #map { flex: 1 1 auto; min-height: 0; }
   #timebar {
@@ -77,6 +77,17 @@
     border-radius: 4px; background: #fff; cursor: pointer; font-family: inherit; color: #1a5276;
   }
   .download-btn:hover { background: #f5f5f5; }
+  .filter-group { margin-bottom: 10px; }
+  .filter-group h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+  .filter-chip {
+    display: inline-block; margin: 0 6px 6px 0; padding: 4px 10px; font-size: 12px;
+    border: 1px solid var(--border); border-radius: 14px; background: #fff; cursor: pointer; font-family: inherit;
+  }
+  .filter-chip:hover { background: #f5f5f5; }
+  .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .filter-count { opacity: 0.75; }
+  .filter-active-row { font-size: 12px; margin-bottom: 10px; padding: 6px 8px; background: #f7f9fa; border-radius: 4px; }
+  .filter-active-row button { margin-left: 6px; font-size: 11px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-family: inherit; }
   .help-body { font-size: 12.5px; line-height: 1.5; margin: 8px 0 14px; padding: 10px 12px; background: #f7f9fa; border-radius: 6px; }
   .help-body ol { margin: 0; padding-left: 18px; }
   .help-body li { margin-bottom: 4px; }
@@ -151,12 +162,16 @@
 <div id="app">
   <div id="sidebar">
     <div class="logos-row">
-      <a href="https://www.cultureelerfgoed.nl/" target="_blank" rel="noopener" title="Rijksdienst voor het Cultureel Erfgoed">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Rijksdienst_voor_het_Cultureel_Erfgoed_logo.svg" alt="Rijksdienst voor het Cultureel Erfgoed">
-      </a>
-      <a href="https://www.knmi.nl/" target="_blank" rel="noopener" title="KNMI">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Koninklijk_Nederlands_Meteorologisch_Instituut_%28KNMI%29_logo.png" alt="KNMI">
-      </a>
+      <svg class="brand-logo" width="40" height="40" viewBox="0 0 64 64" role="img" aria-label="Logo: Aardbevingen NL - epicentrum en rijksmonumenten">
+        <title>Aardbevingen NL - epicentrum &amp; rijksmonumenten (eigen, onafhankelijk beeldmerk)</title>
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <polyline points="8,38 18,38 22,26 26,46 30,20 34,44 38,38 56,38" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M19 14 L26 20 L24 20 L24 28 L14 28 L14 20 L12 20 Z" fill="var(--accent)"/>
+        <g transform="translate(40,32)">
+          <line x1="4" y1="0" x2="4" y2="8" stroke="var(--accent)" stroke-width="1.6"/>
+          <path d="M0 8 L8 8 L6.5 16 L4 17 L1.5 16 Z" fill="var(--accent)"/>
+        </g>
+      </svg>
     </div>
     <div class="title-row">
       <h1>Aardbevingen NL</h1>
@@ -213,6 +228,11 @@
       <button type="button" id="downloadCsvBtn" class="download-btn">Download CSV</button>
     </div>
 
+    <div class="panel" id="monumentFilterPanel" style="display:none">
+      <h2>Filter op type / functie</h2>
+      <div id="monumentFilterBody"></div>
+    </div>
+
     <div class="panel">
       <h2>Zoek op rijksmonumentnummer</h2>
       <div class="slider-row">
@@ -230,7 +250,7 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.20.1<br>
+      Applicatieversie 0.20.4<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
   </div>
@@ -350,7 +370,8 @@
     minYear: null,
     maxYear: null,
     lastMonSearch: null,  // laatst opgezochte monument via rijksmonumentnummer, of null
-    lastMonuments: []     // huidige straal-resultaten (gebouwd + archeologisch), voor CSV-export
+    lastMonuments: [],    // huidige straal-resultaten (gebouwd + archeologisch), ongefilterd
+    monumentFilter: null  // { field: "type"|"functieOorspr", value: string } of null (toon alles)
   };
   var timePlayTimer = null;
 
@@ -761,6 +782,7 @@
       place: place || null,
       sourceEvent: sourceEvent || null
     };
+    state.monumentFilter = null; // een nieuw epicentrum begint weer met de volledige lijst
     drawRadiusCircle();
     renderSelectedInfo();
     renderEqStats();
@@ -895,7 +917,7 @@
       archeologisch.forEach(function (m) { m.type = "archeologisch"; });
       var monuments = gebouwd.concat(archeologisch);
       state.lastMonuments = monuments;
-      renderMonuments(monuments);
+      applyMonumentFilter();
 
       var gebouwdTekst = gebouwd.length >= GEBOUWD_LIMIT
         ? 'minstens ' + GEBOUWD_LIMIT + ' onroerend gebouwd; alleen de ' + GEBOUWD_LIMIT + ' dichtstbijzijnde getoond'
@@ -934,7 +956,12 @@
     var rows = [header.join("|")];
     var mag = ev ? ev.mag : null;
     var depth = ev ? ev.depth : null;
-    state.lastMonuments.forEach(function (m) {
+    // Respecteert een actief filter (monumentaard/functie) -- export wat er nu getoond wordt,
+    // i.p.v. altijd de volledige, ongefilterde straal-resultaten.
+    var toExport = state.monumentFilter
+      ? state.lastMonuments.filter(function (m) { return monumentMatchesFilter(m, state.monumentFilter); })
+      : state.lastMonuments;
+    toExport.forEach(function (m) {
       var score = (mag !== null && m.distKm !== null) ? impactScore(mag, depth, m.distKm) : null;
       var row = [
         csvField(ev ? ev.place : ""),
@@ -1019,7 +1046,118 @@
   function renderMonuments(monuments) {
     monLayer.clearLayers();
     monuments.forEach(function (m) { buildMonumentMarker(m).addTo(monLayer); });
-    renderMonSearchMarker(monuments);
+    // Dedup altijd tegen de VOLLEDIGE, ongefilterde straal-resultaten -- anders zou een actief
+    // filter (monumentaard/functie) de zoekresultaat-marker laten "terugkomen" zodra het gefilterde
+    // monument niet meer in de zichtbare subset zit, terwijl het wel degelijk nog in de straal ligt.
+    renderMonSearchMarker(state.lastMonuments);
+  }
+
+  var AARD_LABELS = { gebouwd: "Onroerend gebouwd", archeologisch: "Archeologisch" };
+  var MAX_FUNCTIE_CHIPS = 12;
+
+  function computeMonumentCounts(monuments) {
+    var aard = {}, functie = {};
+    monuments.forEach(function (m) {
+      aard[m.type] = (aard[m.type] || 0) + 1;
+      if (m.functieOorspr) {
+        var f = stripParenSuffix(m.functieOorspr);
+        functie[f] = (functie[f] || 0) + 1;
+      }
+    });
+    return { aard: aard, functie: functie };
+  }
+
+  function monumentMatchesFilter(m, filter) {
+    if (!filter) return true;
+    if (filter.field === "type") return m.type === filter.value;
+    if (filter.field === "functieOorspr") return m.functieOorspr && stripParenSuffix(m.functieOorspr) === filter.value;
+    return true;
+  }
+
+  // Filtert client-side over de al opgehaalde straal-resultaten (state.lastMonuments) -- geen
+  // nieuwe query nodig, dus geen "database" vereist zoals de gebruiker vreesde: het is gewoon een
+  // array-filter/group-by over data die al in het geheugen staat zodra er een epicentrum is
+  // gekozen. Aard/functie-labels zijn de officiële RCE-thesaurustermen (skos:prefLabel) en kunnen
+  // dus samengestelde waarden bevatten (bv. "Kasteel, buitenplaats") -- geaccepteerd, niet op te
+  // splitsen zonder van de brondata af te wijken.
+  function applyMonumentFilter() {
+    var monuments = state.lastMonuments;
+    var filtered = state.monumentFilter
+      ? monuments.filter(function (m) { return monumentMatchesFilter(m, state.monumentFilter); })
+      : monuments;
+    renderMonuments(filtered);
+    renderMonumentFilterPanel();
+  }
+
+  function renderMonumentFilterPanel() {
+    var monuments = state.lastMonuments;
+    var panel = $("monumentFilterPanel");
+    var body = $("monumentFilterBody");
+    if (!monuments.length) { panel.style.display = "none"; body.innerHTML = ""; return; }
+
+    var counts = computeMonumentCounts(monuments);
+    // Filter dat door een straal-/epicentrum-wijziging niet meer voorkomt automatisch opheffen,
+    // anders blijft er een "onzichtbaar" filter actief dat niets meer laat zien en dat je nergens
+    // meer kunt uitzetten (de bijbehorende knop staat er dan niet meer).
+    if (state.monumentFilter) {
+      var stillExists = state.monumentFilter.field === "type"
+        ? counts.aard[state.monumentFilter.value] > 0
+        : counts.functie[state.monumentFilter.value] > 0;
+      if (!stillExists) state.monumentFilter = null;
+    }
+
+    panel.style.display = "";
+    var html = "";
+    if (state.monumentFilter) {
+      var label = state.monumentFilter.field === "type" ? AARD_LABELS[state.monumentFilter.value] : state.monumentFilter.value;
+      var matchCount = state.monumentFilter.field === "type" ? counts.aard[state.monumentFilter.value] : counts.functie[state.monumentFilter.value];
+      html += '<div class="filter-active-row">Filter: <b>' + escapeHtml(label) + '</b> (' + matchCount + ' van ' + monuments.length + ')' +
+        ' <button type="button" id="clearMonumentFilterBtn">Wis</button></div>';
+    }
+
+    var aardKeys = Object.keys(counts.aard).sort(function (a, b) { return counts.aard[b] - counts.aard[a]; });
+    html += '<div class="filter-group"><h3>Monumentaard</h3>';
+    aardKeys.forEach(function (k) {
+      var isActive = state.monumentFilter && state.monumentFilter.field === "type" && state.monumentFilter.value === k;
+      html += '<button type="button" class="filter-chip' + (isActive ? ' active' : '') + '" data-field="type" data-value="' + escapeHtml(k) + '">' +
+        escapeHtml(AARD_LABELS[k] || k) + ' <span class="filter-count">(' + counts.aard[k] + ')</span></button>';
+    });
+    html += '</div>';
+
+    var functieKeysAll = Object.keys(counts.functie).sort(function (a, b) { return counts.functie[b] - counts.functie[a]; });
+    var functieKeys = functieKeysAll.slice(0, MAX_FUNCTIE_CHIPS);
+    if (functieKeys.length) {
+      html += '<div class="filter-group"><h3>Oorspronkelijke functie</h3>';
+      functieKeys.forEach(function (k) {
+        var isActive = state.monumentFilter && state.monumentFilter.field === "functieOorspr" && state.monumentFilter.value === k;
+        html += '<button type="button" class="filter-chip' + (isActive ? ' active' : '') + '" data-field="functieOorspr" data-value="' + escapeHtml(k) + '">' +
+          escapeHtml(k) + ' <span class="filter-count">(' + counts.functie[k] + ')</span></button>';
+      });
+      if (functieKeysAll.length > MAX_FUNCTIE_CHIPS) {
+        html += '<div class="hint">+ ' + (functieKeysAll.length - MAX_FUNCTIE_CHIPS) + ' andere functies (niet apart getoond)</div>';
+      }
+      html += '</div>';
+    }
+
+    body.innerHTML = html;
+
+    body.querySelectorAll(".filter-chip").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var field = btn.getAttribute("data-field");
+        var value = btn.getAttribute("data-value");
+        state.monumentFilter = (state.monumentFilter && state.monumentFilter.field === field && state.monumentFilter.value === value)
+          ? null
+          : { field: field, value: value };
+        applyMonumentFilter();
+      });
+    });
+    var clearBtn = $("clearMonumentFilterBtn");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        state.monumentFilter = null;
+        applyMonumentFilter();
+      });
+    }
   }
 
   // Houdt de rijksmonumentnummer-zoekresultaat-marker actueel en dupliceervrij i.p.v. een

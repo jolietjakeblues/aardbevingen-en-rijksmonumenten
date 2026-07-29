@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" role="img" aria-label="Logo: Aardbevingen NL - epicentrum en rijksmonumenten">
+  <title>Aardbevingen NL - epicentrum &amp; rijksmonumenten (eigen, onafhankelijk beeldmerk)</title>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#ffffff"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="#2c3e50" stroke-width="2.5"/>
+  <polyline points="8,38 18,38 22,26 26,46 30,20 34,44 38,38 56,38" fill="none" stroke="#2c3e50" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M19 14 L26 20 L24 20 L24 28 L14 28 L14 20 L12 20 Z" fill="#2c3e50"/>
+  <g transform="translate(40,32)">
+    <line x1="4" y1="0" x2="4" y2="8" stroke="#2c3e50" stroke-width="1.6"/>
+    <path d="M0 8 L8 8 L6.5 16 L4 17 L1.5 16 Z" fill="#2c3e50"/>
+  </g>
+</svg>

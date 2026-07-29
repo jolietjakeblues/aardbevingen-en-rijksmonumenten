@@ -9,7 +9,11 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.20.1.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.1.html`
+- **`docs/logo.svg`** - standalone versie van het eigen beeldmerk (zie v0.20.2), met een witte
+  achtergrond zodat het ook leesbaar blijft op GitHub's donkere thema. Losstaand van de inline
+  SVG's in `index.html`/`achtergrond.html` (bewust niet gedeeld, om geen refactor-risico te nemen
+  op de al werkende, geteste app-pagina's) - gebruikt in `README.md` als logo bovenaan.
+- `aardbevingen_en_rijksmonumenten_v0.20.4.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.4.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -126,6 +130,18 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   `.loading`-tekst overal: aardbevingen laden, rijksmonumenten binnen straal, nummer-opzoeking.
 
 ## Mogelijke uitbreidingen (later)
+
+- ~~Filter op monumentaard/oorspronkelijke functie~~ - **gedaan** (v0.20.3): klikbare labels met
+  aantallen filteren zowel de kaart als de CSV-export, volledig client-side (geen database nodig,
+  zoals aanvankelijk gevreesd) over `state.lastMonuments`. Functielijst begrensd tot de 12
+  grootste categorieën. Reset automatisch bij een nieuw epicentrum of als de actieve categorie
+  door een straal-wijziging niet meer voorkomt. Zie CHANGELOG voor de volledige details.
+
+- ~~Eigen beeldmerk i.p.v. KNMI/RCE-logo's~~ - **gedaan** (v0.20.2): inline SVG (huisje + schop op
+  een seismogram-golflijn, `--accent`-kleur) vervangt de logo's bovenaan de zijbalk en op
+  `docs/achtergrond.html`. Reden: een overheidslogo op een niet-gelieerde toepassing wekt een
+  schijn van samenwerking, wat de disclaimer juist ontkracht. Tekstuele bronvermelding
+  (KNMI/CEO-RCE-links in de footer) blijft staan - dat is feitelijke attributie, geen logo-gebruik.
 
 - ~~Download CSV van de straal-resultaten~~ - **gedaan** (v0.20.1): knop bij "Rijksmonumenten
   binnen straal" exporteert een platte, pipe-gescheiden CSV (aardbeving + alle getoonde

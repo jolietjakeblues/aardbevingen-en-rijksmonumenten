@@ -130,7 +130,19 @@ licht verschuiven als de brondata verandert.
 | 14.4 | Controleer een monument dat in het versterkingsprogramma zit (bv. nr. 26265) | Kolom "Versterkingsprogramma" toont "ja" |
 | 14.5 | Open het bestand in Excel | Accenten (bv. "Groningen") tonen correct dankzij de UTF-8 BOM |
 
-## 15. Robuustheid bij falende bronnen
+## 15. Filter op monumentaard/functie
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 15.1 | Selecteer een epicentrum (bv. Loppersum, 25 km) | Paneel "Filter op type / functie" verschijnt met twee groepen: Monumentaard (2 chips) en Oorspronkelijke functie (tot 12 chips, gesorteerd op aantal, met "+ N andere functies" als er meer zijn) |
+| 15.2 | Klik de chip "Archeologisch (214)" | Alleen schop-markers blijven op de kaart (huisjes verdwijnen); rij "Filter: Archeologisch (214 van 614) Wis" verschijnt boven de chips |
+| 15.3 | Klik dezelfde chip nogmaals | Filter verdwijnt, alle 614 markers weer zichtbaar |
+| 15.4 | Klik een functie-chip (bv. "Woonhuis") en download de CSV | CSV bevat alleen rijen met die functie in de kolom Functie_Oorspronkelijk (aantal rijen = aantal op de chip) |
+| 15.5 | Klik "Wis" naast een actief filter | Filter wordt opgeheven, alle markers weer zichtbaar |
+| 15.6 | Kies met een actief filter een nieuw, ander epicentrum | Filter wordt automatisch gewist (paneel toont weer de volledige, nieuwe telling zonder actieve chip) |
+| 15.7 | Activeer een functie-filter, wijzig daarna de straal zodanig dat die functie niet meer voorkomt in de nieuwe straal | Filter wordt automatisch opgeheven i.p.v. een lege kaart zonder wis-mogelijkheid te tonen |
+
+## 16. Robuustheid bij falende bronnen
 
 | # | Stap | Verwacht resultaat |
 |---|---|---|

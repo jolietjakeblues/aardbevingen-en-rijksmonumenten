@@ -14,7 +14,7 @@
   body { background:#fafafa; }
   .page { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }
   .logos-row { display:flex; align-items:center; gap:18px; margin-bottom:24px; }
-  .logos-row img { height:30px; width:auto; max-width:130px; object-fit:contain; display:block; }
+  .brand-logo { display:block; flex-shrink:0; }
   .back-link { display:inline-block; margin-bottom: 20px; font-size: 13px; }
   h1 { font-size: 24px; margin: 0 0 6px; color: var(--accent); }
   .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 32px; line-height:1.5; }
@@ -33,12 +33,16 @@
 <body>
 <div class="page">
   <div class="logos-row">
-    <a href="https://www.cultureelerfgoed.nl/" target="_blank" rel="noopener" title="Rijksdienst voor het Cultureel Erfgoed">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Rijksdienst_voor_het_Cultureel_Erfgoed_logo.svg" alt="Rijksdienst voor het Cultureel Erfgoed">
-    </a>
-    <a href="https://www.knmi.nl/" target="_blank" rel="noopener" title="KNMI">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Koninklijk_Nederlands_Meteorologisch_Instituut_%28KNMI%29_logo.png" alt="KNMI">
-    </a>
+    <svg class="brand-logo" width="40" height="40" viewBox="0 0 64 64" role="img" aria-label="Logo: Aardbevingen NL - epicentrum en rijksmonumenten">
+      <title>Aardbevingen NL - epicentrum &amp; rijksmonumenten (eigen, onafhankelijk beeldmerk)</title>
+      <rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+      <polyline points="8,38 18,38 22,26 26,46 30,20 34,44 38,38 56,38" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M19 14 L26 20 L24 20 L24 28 L14 28 L14 20 L12 20 Z" fill="var(--accent)"/>
+      <g transform="translate(40,32)">
+        <line x1="4" y1="0" x2="4" y2="8" stroke="var(--accent)" stroke-width="1.6"/>
+        <path d="M0 8 L8 8 L6.5 16 L4 17 L1.5 16 Z" fill="var(--accent)"/>
+      </g>
+    </svg>
   </div>
 
   <a class="back-link" href="index.html">&larr; Terug naar de kaart</a>

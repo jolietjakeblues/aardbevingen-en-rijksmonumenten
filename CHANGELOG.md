@@ -4,6 +4,51 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.20.4 - logo in README
+
+Het eigen beeldmerk (v0.20.2) ook buiten de app zelf zichtbaar gemaakt: nieuw standalone bestand
+`docs/logo.svg` (zelfde ontwerp, met een witte achtergrond zodat het ook op GitHub's donkere
+thema leesbaar blijft) en bovenaan `README.md` geplaatst. Bewust een apart bestand i.p.v. de
+inline SVG's in `index.html`/`achtergrond.html` hergebruiken, om geen refactor-risico te nemen op
+de al werkende app-pagina's. GitHub's "social preview image" (de link-voorvertoning bij delen)
+kan hiermee niet automatisch worden ingesteld - dat vereist een losse rasterafbeelding via de
+repository-instellingen in de GitHub-webinterface, iets wat niet via een bestandswijziging of de
+GitHub CLI te automatiseren is.
+
+## v0.20.3 - filter op monumentaard/functie
+
+Nieuw paneel "Filter op type / functie" bij "Rijksmonumenten binnen straal": klikbare labels met
+aantallen per monumentaard (bv. "Onroerend gebouwd (400)") en per oorspronkelijke functie (bv.
+"Boerderij (56)", "Woonhuis (85)"), gesorteerd op aantal. Klikken filtert zowel de kaartmarkers
+als de CSV-export tot alleen die categorie; nogmaals klikken (of "Wis") toont weer alles. Volledig
+client-side (array-filter/group-by over `state.lastMonuments`, dat al in het geheugen staat zodra
+er een epicentrum gekozen is) - geen nieuwe query of database nodig, ondanks de aanvankelijke
+zorg dat dit wél nodig zou zijn. Functielijst begrensd tot de 12 grootste categorieën (met een
+telling van de rest) om de zijbalk niet te laten volstromen bij een straal met veel verschillende
+functies. Filter wordt automatisch gewist zodra een nieuw epicentrum wordt gekozen, en ook
+automatisch opgeheven als de actieve categorie door een straal-wijziging niet meer voorkomt.
+Labels zijn de officiële RCE-thesaurustermen (skos:prefLabel) en dus soms samengesteld (bv.
+"Kasteel, buitenplaats") - bewust geaccepteerd, niet zelf op te splitsen zonder van de brondata
+af te wijken. Live geverifieerd: klikken op "Archeologisch" toont exact 214 schop-markers (0
+huisjes); "Woonhuis" toont 85 markers en een CSV-export met precies 85 rijen, allemaal
+"Woonhuis"; filter reset correct bij een nieuw epicentrum.
+
+## v0.20.2 - eigen beeldmerk i.p.v. KNMI/RCE-logo's
+
+De KNMI- en RCE-logo's bovenaan de zijbalk (en op `docs/achtergrond.html`) vervangen door een
+eigen, onafhankelijk beeldmerk: een huisje en een schop op een seismogram-achtige golflijn, in
+een cirkelvormig kader, als inline SVG in de bestaande `--accent`-kleur (#2c3e50). Reden:
+overheidslogo's tonen op een niet-gelieerde toepassing wekt een schijn van samenwerking of
+goedkeuring - precies wat de disclaimer ontkracht - en CC0 op het beeldbestand dekt niet per se
+het merkgebruik van het logo zelf. De tekstuele bronvermelding (KNMI/CEO-RCE-links in de footer)
+blijft ongewijzigd staan, want dat is feitelijke attributie, geen suggestie van samenwerking.
+Kleur bewust niet aangepast naar "Rijksblauw": de exacte officiële hex kon niet worden
+geverifieerd (rijkshuisstijl.nl-pagina met logokleuren zit achter een inlog), en de bestaande
+`--accent` draagt sowieso geen overheidsassociatie. Drie ontwerprichtingen overwogen (losse
+seismogramlijn, epicentrumringen, een gespleten erfgoedschild); gekozen voor de seismogramlijn,
+met een correctie nadat bleek dat het huisje in de eerste versie op de kop stond (coördinaten
+verkeerd overgenomen bij het herschalen van de bestaande 16px-huisvorm).
+
 ## v0.20.1 - CSV-export
 
 Nieuwe knop "Download CSV" bij "Rijksmonumenten binnen straal": exporteert de huidige
