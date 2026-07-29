@@ -26,7 +26,7 @@ aardbevingen, cross-browser/mobiel testen (inclusief een gevonden en gefixte leg
 kleurenblindheid-check (inclusief een gefixt rood/groen-contrastprobleem).
 
 **Bewust nog niet gedaan, uitgesteld tot de 2e release**: aanvullende validatie van de
-impactindicatie (zie `documentation/DEVELOPMENT.md`, "Roadmap") - een onderzoekstaak die meer
+impactindicatie (zie `documentation/DEVELOPMENT.md`, "Roadmap"), een onderzoekstaak die meer
 tijd en inlezen vergt dan de rest van deze checklist.
 
 **Aanvullend gefixt vóór het taggen** (gevonden bij hands-on gebruik van de rijksmonumentnummer-
@@ -71,7 +71,7 @@ zodat ook bezoekers van de live pagina's (niet alleen lezers van de README) deze
 ## v0.19.5 - mobiele legenda-bug + kleurenblindheid-fix
 
 Twee van de laatste drie punten op de roadmap naar v0.20.0 afgerond. **Mobiele bug** (gevonden
-tijdens cross-browser/mobiel testen door de gebruiker: "de legenda sluit niet meer"): de
+tijdens cross-browser/mobiel testen door gebruikers: "de legenda sluit niet meer"): de
 uitgeklapte legenda kon hoger worden dan de kaartpane zelf, waardoor Leaflet's bottom-anchored
 control omhoog groeide voorbij de bovenkant van `#map` (`overflow:hidden`) en de "Legenda"-knop
 buiten het klikbare kaartgebied belandde - een tik daar raakte in plaats daarvan een
@@ -81,7 +81,7 @@ scroll (`max-height: 35dvh; overflow-y: auto`) in de mobiele media query, alleen
 "Emulate vision deficiencies"). Rood en het oorspronkelijke groen bleken bij deuteranopie (de
 meest voorkomende vorm) vrijwel identiek. Groen vervangen door Okabe & Ito's kleurenblind-veilige
 "bluish green" (#009E73) - blijft voor gewoon zicht duidelijk groen, lost het probleem op.
-Cross-browser testen (Chrome/Firefox/Safari) door de gebruiker: geen problemen gevonden. Daarmee
+Cross-browser testen (Chrome/Firefox/Safari) door verschillende gebruikers: geen problemen gevonden. Daarmee
 is de volledige roadmap-checklist naar v0.20.0 afgerond, op de bewust uitgestelde validatie van de
 impactindicatie na (die schuift door naar het onderzoekstraject voor de 2e officiële release).
 

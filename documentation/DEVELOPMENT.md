@@ -33,7 +33,7 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
   timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
   (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
-- **Cross-browser: gedaan.** Chrome, Firefox en Safari getest door de gebruiker - alles werkt.
+- **Cross-browser: gedaan.** Chrome, Firefox en Safari getest door meerdere gebruikers - alles werkt.
   **Mobiel: bug gevonden en gefixt (v0.19.5).** De uitgeklapte legenda kon hoger worden dan de
   kaartpane zelf; Leaflet's bottom-anchored control groeide dan omhoog voorbij de bovenkant van
   `#map` (dat `overflow:hidden` heeft), waardoor zelfs de "Legenda"-knop buiten het klikbare
@@ -103,10 +103,9 @@ die is bewust uitgesteld naar het onderzoekstraject voor de 2e officiële releas
 
 ## Roadmap naar de 2e officiële release
 
-- **Validatie van de impactindicatie** (roadmap-item 3 hierboven, uitgesteld) - de gebruiker leest
-  zich hier eerst zelf op in voordat het onderzoek wordt opgepakt. Nog geen tijdsinschatting.
+- **Validatie van de impactindicatie** (roadmap-item 3 hierboven, uitgesteld) - Nog geen tijdsinschatting.
 
-## Gemeld door de gebruiker: rijksmonumentnummer-zoeken - opgelost (vóór v0.20.0-release)
+## Gemeld door een gebruiker: rijksmonumentnummer-zoeken - opgelost (vóór v0.20.0-release)
 
 Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
 
@@ -140,7 +139,7 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   impactindicatie) plus een regel in de popup ("In het officiële RCE-versterkingsprogramma").
   Puur ter vergelijking van de exploratieve straal-selectie met de officiële, beoordeelde lijst -
   geen filter. Live geverifieerd op rijksmonument nr. 26265 (Petrus en Pauluskerk, Loppersum).
-  Kanttekening: dit is een snapshot van de door de gebruiker aangeleverde lijst, geen live
+  Kanttekening: dit is een snapshot van de door RCE geleverde/samengestelde lijst, geen live
   koppeling - kan achterlopen als de officiële lijst wijzigt.
 
 - ~~Rijksmonumentnummer-opzoeking (locatie + dichtstbijzijnde aardbeving)~~ - **gedaan** (v0.19.3):
@@ -162,7 +161,7 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   als epicentrum (1.689 aardbevingen / 613 rijksmonumenten binnen 25 km). Ongeldige/niet-gevonden
   nummers geven een duidelijke foutmelding i.p.v. een crash.
 
-**Bewust niet opgepakt (besloten deze sessie):**
+**Bewust niet opgepakt:**
 - Polygon-centroid i.p.v. het eerste WKT-coördinatenpaar: die precisie is niet nodig gebleken.
 - Caching van monument-queries: de live SPARQL-query is al snel genoeg, caching lost geen
   merkbaar probleem op.

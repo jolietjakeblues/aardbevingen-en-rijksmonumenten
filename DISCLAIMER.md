@@ -1,8 +1,8 @@
 ## Disclaimer en onafhankelijkheid
 
-Deze toepassing is een onafhankelijk initiatief en is niet ontwikkeld in opdracht van, onder verantwoordelijkheid van of met goedkeuring van het KNMI of de Rijksdienst voor het Cultureel Erfgoed.
+Deze toepassing is een onafhankelijk initiatief van JolietJakeBlues en is niet ontwikkeld in opdracht van, onder verantwoordelijkheid van of met goedkeuring van het KNMI of de Rijksdienst voor het Cultureel Erfgoed.
 
-De toepassing gebruikt openbare gegevens van het KNMI en de Rijksdienst voor het Cultureel Erfgoed. Deze gegevens worden tijdens het gebruik rechtstreeks bij de betreffende databronnen opgehaald. De aanwezigheid van deze officiële gegevens betekent niet dat het KNMI of de Rijksdienst voor het Cultureel Erfgoed instaat voor de werking, interpretatie of presentatie ervan binnen deze toepassing.
+De toepassing gebruikt openbare gegevens van het KNMI (CSV) en de Rijksdienst voor het Cultureel Erfgoed (Linked Open Data). Deze gegevens worden tijdens het gebruik rechtstreeks bij de betreffende databronnen opgehaald. De aanwezigheid van deze officiële gegevens betekent niet dat het KNMI of de Rijksdienst voor het Cultureel Erfgoed instaat voor de werking, interpretatie of presentatie ervan binnen deze toepassing.
 
 De kaart, teksten, berekeningen, selecties en visualisaties hebben uitsluitend een informatief en verkennend karakter. Ze vormen geen officiële beoordeling, schadevaststelling, risicoanalyse, beleidsuitspraak, juridisch advies of besluit van een overheidsorganisatie.
 

@@ -14,7 +14,7 @@ de pagina en bij elke interactie wordt er in de browser (`fetch()`) rechtstreeks
 | Leaflet-library | eenmalig bij laden | unpkg CDN |
 
 Er is dus geen "ververs de data"-knop nodig en geen risico op een verouderde snapshot van de
-brondata zelf - maar de applicatiecode (HTML/CSS/JS), de Leaflet-library en de achtergrondpagina
+brondata zelf, maar de applicatiecode (HTML/CSS/JS), de Leaflet-library en de achtergrondpagina
 zijn wel gewoon statische bestanden, geen live diensten. De pagina werkt bovendien niet zonder
 internetverbinding, en de snelheid hangt af van de bron-endpoints.
 
@@ -37,7 +37,7 @@ KNMI-endpoints te zijn (te zien aan `prov:wasDerivedFrom` op elk event, wijzend 
 `rdsa.knmi.nl`). Rechtstreeks bij de bron ophalen is dus zowel actueler (geen wachten op RCE's
 eigen ververscyclus) als completer: KNMI's archief gaat terug tot 1911, verder terug dan wat er
 via RCE beschikbaar bleek. Kanttekening: het KNMI kent alleen de categorieën "induced" en
-"tectonic" - de categorie "steengroeve explosie" die in de RCE-versie voorkwam, bestaat niet in
+"tectonic", de categorie "steengroeve explosie" die in de RCE-versie voorkwam, bestaat niet in
 deze bron en is dus vervallen. Rijksmonumenten blijven wel via RCE lopen; dat is een andere
 databron met een ander doel (cultureel erfgoed, niet seismologie).
 
@@ -62,12 +62,12 @@ ophalen en is geen eigen backend of proxy nodig.
 - **Alleen geldige rijksmonumenten**: gefilterd op juridische status = "rijksmonument" (dus niet
   "voorbeschermd" of "geen rijksmonument").
 - Rijksmonumenten worden in twee aparte queries opgehaald: "onroerend gebouwd" (gelimiteerd tot
-  400, dichtstbijzijnde eerst - bij een grote straal in een dichte regio zoals Amsterdam kan het
+  400, dichtstbijzijnde eerst, bij een grote straal in een dichte regio zoals Amsterdam kan het
   werkelijke aantal hoger liggen) en "archeologisch" (limiet 3.000, landelijk maar ~1.500 dus in
   de praktijk ongelimiteerd). Deze splitsing is bewust: bij één gedeelde LIMIT 400 verdrongen
-  gebouwde monumenten de archeologische categorie systematisch - een scheepswrak op 25 km van een
+  gebouwde monumenten de archeologische categorie systematisch, een scheepswrak op 25 km van een
   epicentrum verscheen nooit omdat er 792 gebouwde monumenten dichterbij lagen. Bevestigd
   gerepareerd voor "Scheepswrak aanloop Molengat" (rijksmonumentnr. 532450, bij Den Helder).
 - Naam is bij slechts ~13% van de rijksmonumenten bekend, oorspronkelijke functie bij vrijwel
-  100%, huidige functie apart bij ~8% - dit is een eigenschap van de brondata, geen bug (zie ook
+  100%, huidige functie apart bij ~8%, dit is een eigenschap van de brondata, geen bug (zie ook
   de code-comments in `docs/index.html`).

@@ -46,7 +46,7 @@ De aardbevings- en monumentgegevens worden tijdens het gebruik rechtstreeks bij 
 opgehaald. De applicatie bevat geen ingebouwde momentopname van deze datasets.
 
 - **Aardbevingen:** KNMI, rechtstreeks via `rdsa.knmi.nl` (CSV).
-- **Rijksmonumenten:** RCE Cultureel Erfgoed Open Data, via het CHO SPARQL-endpoint (CEO-ontologie).
+- **Rijksmonumenten:** RCE Cultureel Erfgoed Linked Open Data, via het CHO SPARQL-endpoint (CEO-ontologie).
 
 Waarom rechtstreeks het KNMI, welke bronnen zijn afgewogen, en hoe de rijksmonumenten-query werkt:
 zie [documentation/DATA.md](documentation/DATA.md).
@@ -84,7 +84,7 @@ Lees de volledige disclaimer in [DISCLAIMER.md](DISCLAIMER.md).
 
 [MIT](LICENSE) - vrij te gebruiken, aan te passen en te verspreiden, mits de copyright-notice
 behouden blijft. Let op: dit dekt alleen de code in deze repository. De gebruikte databronnen
-(RCE linked data) zijn overheidsdata met hun eigen voorwaarden; check die van RCE en
+(RCE linked open data) zijn overheidsdata met hun eigen voorwaarden; check die van RCE en
 IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
 
 ## Dank aan
