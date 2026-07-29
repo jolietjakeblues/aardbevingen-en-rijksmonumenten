@@ -6,8 +6,7 @@ geen schadebeoordeling.
 
 **Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
-Huidige versie: 0.20.0 - eerste officiële release - zie [CHANGELOG.md](CHANGELOG.md) voor de
-volledige versiegeschiedenis.
+Huidige versie: 0.20.1 - zie [CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
 
 Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
 
@@ -33,6 +32,8 @@ kaart).
   aardbeving uit de volledige dataset, met een optie om die als epicentrum te selecteren.
 - Niet-geselecteerde aardbevingen faden zodra er een epicentrum actief is, om drukke clusters
   (Groningen, Limburg) rustig te houden.
+- Download CSV: exporteert de huidige straal-resultaten (aardbeving + alle getoonde
+  rijksmonumenten, beide typen) als platte, pipe-gescheiden CSV.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
 - Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
   plaats van dat de hele pagina faalt.

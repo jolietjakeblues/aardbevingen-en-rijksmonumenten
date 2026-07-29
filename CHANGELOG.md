@@ -4,6 +4,20 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.20.1 - CSV-export
+
+Nieuwe knop "Download CSV" bij "Rijksmonumenten binnen straal": exporteert de huidige
+straal-resultaten (de aardbeving + alle getoonde rijksmonumenten, beide typen) als platte,
+pipe-gescheiden (`|`) CSV - op verzoek geen komma, om escaping van komma's in tekstvelden
+(naam, functie) te vermijden. De aardbevinggegevens (plaats, datum, magnitude, diepte, straal)
+worden op elke monumentrij herhaald (gangbaar patroon voor een-op-veel-exports). Kolommen per
+monument: nummer, naam, type, oorspronkelijke/huidige functie, afstand tot epicentrum,
+impactindicatie, effectgebied, of het monument in het officiële versterkingsprogramma zit, link
+naar het monumentenregister en de linked-data URI. Client-side gegenereerd (`Blob` + tijdelijke
+downloadlink), geen server nodig. UTF-8 BOM toegevoegd zodat accenten correct tonen in Excel.
+Live geverifieerd: 614 monumentrijen + 1 header voor Loppersum/25km, kolommen kloppen (incl.
+"ja" voor nr. 26265 bij Versterkingsprogramma), bestandsnaam `rijksmonumenten_loppersum_25km.csv`.
+
 ## v0.20.0 - eerste officiële release
 
 De volledige roadmap-checklist naar deze release is afgerond (zie v0.19.0 t/m v0.19.5 hieronder):

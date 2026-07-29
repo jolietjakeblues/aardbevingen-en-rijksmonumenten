@@ -9,7 +9,7 @@
   aardbevingen en rijksmonumenten samenhangen: het RCE-werkproces "versterken erfgoed", de schaal
   van de problematiek, en hoe deze kaart zich verhoudt tot de officiële, beoordeelde
   versterkingslijst. Onderling gelinkt met `index.html` (footer ↔ "Terug naar de kaart").
-- `aardbevingen_en_rijksmonumenten_v0.20.0.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.0.html`
+- `aardbevingen_en_rijksmonumenten_v0.20.1.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.1.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -127,6 +127,11 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   `.loading`-tekst overal: aardbevingen laden, rijksmonumenten binnen straal, nummer-opzoeking.
 
 ## Mogelijke uitbreidingen (later)
+
+- ~~Download CSV van de straal-resultaten~~ - **gedaan** (v0.20.1): knop bij "Rijksmonumenten
+  binnen straal" exporteert een platte, pipe-gescheiden CSV (aardbeving + alle getoonde
+  rijksmonumenten, beide typen), client-side gegenereerd via `Blob`. Zie CHANGELOG voor de
+  volledige kolomlijst.
 
 - ~~Visuele markering voor rijksmonumenten in het officiële RCE-versterkingsprogramma~~ -
   **gedaan** (v0.19.0), optie (a) puur informatief gekozen (niet een filter): monumenten waarvan

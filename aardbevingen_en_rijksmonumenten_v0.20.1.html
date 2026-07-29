@@ -72,6 +72,11 @@
   }
   .help-toggle:hover { background: #f5f5f5; }
   .help-toggle:focus-visible { outline: 2px solid #1a5276; outline-offset: 2px; }
+  .download-btn {
+    margin-top: 8px; font-size: 12px; padding: 6px 12px; border: 1px solid var(--border);
+    border-radius: 4px; background: #fff; cursor: pointer; font-family: inherit; color: #1a5276;
+  }
+  .download-btn:hover { background: #f5f5f5; }
   .help-body { font-size: 12.5px; line-height: 1.5; margin: 8px 0 14px; padding: 10px 12px; background: #f7f9fa; border-radius: 6px; }
   .help-body ol { margin: 0; padding-left: 18px; }
   .help-body li { margin-bottom: 4px; }
@@ -205,6 +210,7 @@
     <div class="panel">
       <h2>Rijksmonumenten binnen straal</h2>
       <div id="monStatus" aria-live="polite"><span class="placeholder">—</span></div>
+      <button type="button" id="downloadCsvBtn" class="download-btn">Download CSV</button>
     </div>
 
     <div class="panel">
@@ -223,8 +229,8 @@
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
-      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.20.0.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.20.0<br>
+      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.20.1.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
+      Applicatieversie 0.20.1<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
   </div>
@@ -343,7 +349,8 @@
     timeTo: null,
     minYear: null,
     maxYear: null,
-    lastMonSearch: null   // laatst opgezochte monument via rijksmonumentnummer, of null
+    lastMonSearch: null,  // laatst opgezochte monument via rijksmonumentnummer, of null
+    lastMonuments: []     // huidige straal-resultaten (gebouwd + archeologisch), voor CSV-export
   };
   var timePlayTimer = null;
 
@@ -887,6 +894,7 @@
       gebouwd.forEach(function (m) { m.type = "gebouwd"; });
       archeologisch.forEach(function (m) { m.type = "archeologisch"; });
       var monuments = gebouwd.concat(archeologisch);
+      state.lastMonuments = monuments;
       renderMonuments(monuments);
 
       var gebouwdTekst = gebouwd.length >= GEBOUWD_LIMIT
@@ -901,6 +909,73 @@
       if (token !== state.monFetchToken) return;
       $("monStatus").innerHTML = '<span class="error-msg" role="alert">Kon rijksmonumenten niet laden: ' + escapeHtml(err.message) + '</span>';
     }
+  }
+
+  // "|" als scheidingsteken (op verzoek) i.p.v. komma -- geen quote-escaping nodig zoals bij een
+  // komma-CSV, alleen een letterlijke "|" of een regeleinde in een tekstveld zou de kolommen laten
+  // verschuiven; die komen in de brondata niet voor, maar worden voor de zekerheid toch vervangen.
+  function csvField(value) {
+    if (value === null || value === undefined) return "";
+    return String(value).replace(/\|/g, "/").replace(/[\r\n]+/g, " ").trim();
+  }
+
+  // Platte, gedenormaliseerde CSV: de aardbevinggegevens worden op elke monumentrij herhaald
+  // (gangbaar patroon voor een-op-veel-exports, werkt meteen goed in Excel/Sheets). Gebruikt de
+  // straal-resultaten zoals ze nu op de kaart staan (state.lastMonuments), niet een nieuwe query.
+  function buildMonumentsCsv() {
+    var ev = state.selected;
+    var header = [
+      "Aardbeving_Plaats", "Aardbeving_Datum", "Aardbeving_Magnitude", "Aardbeving_Diepte_km",
+      "Straal_km", "Monumentnummer", "Monument_Naam", "Monument_Type",
+      "Functie_Oorspronkelijk", "Functie_Huidig", "Afstand_tot_epicentrum_km",
+      "Impactindicatie", "Effectgebied", "Versterkingsprogramma", "Monumentenregister_URL",
+      "Linked_data_URI"
+    ];
+    var rows = [header.join("|")];
+    var mag = ev ? ev.mag : null;
+    var depth = ev ? ev.depth : null;
+    state.lastMonuments.forEach(function (m) {
+      var score = (mag !== null && m.distKm !== null) ? impactScore(mag, depth, m.distKm) : null;
+      var row = [
+        csvField(ev ? ev.place : ""),
+        csvField(ev && ev.sourceEvent ? ev.sourceEvent.date : ""),
+        csvField(mag !== null ? mag.toFixed(1) : ""),
+        csvField(depth !== null ? depth : ""),
+        csvField(state.radiusKm),
+        csvField(m.nr),
+        csvField(m.naam),
+        csvField(m.type === "archeologisch" ? "archeologisch" : "onroerend gebouwd"),
+        csvField(stripParenSuffix(m.functieOorspr || "")),
+        csvField(stripParenSuffix(m.functieHuidig || "")),
+        csvField(m.distKm !== null ? m.distKm.toFixed(1) : ""),
+        csvField(score !== null ? score.toFixed(1) : ""),
+        csvField(score === null ? "" : (score >= 0 ? "binnen indicatief effectgebied" : "buiten indicatief effectgebied")),
+        csvField(VERSTERKINGSPROGRAMMA_NRS.has(m.nr) ? "ja" : "nee"),
+        csvField(MONUMENTENREGISTER_URL + m.nr),
+        csvField(m.uri)
+      ];
+      rows.push(row.join("|"));
+    });
+    return rows.join("\r\n");
+  }
+
+  function downloadMonumentsCsv() {
+    if (!state.lastMonuments.length) {
+      $("monStatus").innerHTML = '<span class="placeholder">Nog geen rijksmonumenten om te downloaden - selecteer eerst een epicentrum.</span>';
+      return;
+    }
+    var csv = buildMonumentsCsv();
+    var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" }); // BOM voor correcte accenten in Excel
+    var url = URL.createObjectURL(blob);
+    var place = state.selected && state.selected.place ? state.selected.place : "epicentrum";
+    var safePlace = place.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "rijksmonumenten_" + safePlace + "_" + state.radiusKm + "km.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // Gedeeld door renderMonuments() (straal-resultaten) en de rijksmonumentnummer-opzoeking:
@@ -1259,6 +1334,10 @@
     });
   }
 
+  function initDownloadCsv() {
+    $("downloadCsvBtn").addEventListener("click", downloadMonumentsCsv);
+  }
+
   initMap();
   new LegendControl().addTo(map);
   initSlider();
@@ -1266,6 +1345,7 @@
   initMonNrSearch();
   initTimeControls();
   initHelpToggle();
+  initDownloadCsv();
   loadEarthquakes();
 })();
 </script>

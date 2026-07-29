@@ -120,7 +120,17 @@ licht verschuiven als de brondata verandert.
 | 13.1 | Simuleer deuteranopie/protanopie/tritanopie (bv. via Chrome devtools "Emulate vision deficiencies", of een online simulator) op de legenda-kleurvlakjes | Rood, oranje en het (sinds v0.19.5) aangepaste groen (#009E73) blijven van elkaar te onderscheiden - rood en groen liggen niet meer nagenoeg op elkaar zoals bij het oorspronkelijke groen (#2e7d32) het geval was bij deuteranopie |
 | 13.2 | Controleer de legenda-kleurvlakjes-hex via devtools | Groen-vlakje toont `rgb(0, 158, 115)` (#009E73), niet meer `rgb(46, 125, 50)` |
 
-## 14. Robuustheid bij falende bronnen
+## 14. Download CSV
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 14.1 | Klik "Download CSV" zonder dat er een epicentrum geselecteerd is | Statustekst: "Nog geen rijksmonumenten om te downloaden - selecteer eerst een epicentrum." Geen download. |
+| 14.2 | Selecteer een epicentrum (bv. Loppersum, 25 km), klik "Download CSV" | Bestand `rijksmonumenten_<plaats>_<straal>km.csv` wordt gedownload; regelaantal = 1 header + N monumentrijen (N gelijk aan het aantal in "Rijksmonumenten binnen straal") |
+| 14.3 | Open het bestand in een spreadsheet-programma of teksteditor | Kolommen gescheiden door `\|`; aardbevinggegevens (plaats, datum, magnitude, diepte, straal) identiek op elke rij; per monument: nummer, naam, type, functies, afstand, impactindicatie, effectgebied, versterkingsprogramma (ja/nee), monumentenregister-link, linked-data URI |
+| 14.4 | Controleer een monument dat in het versterkingsprogramma zit (bv. nr. 26265) | Kolom "Versterkingsprogramma" toont "ja" |
+| 14.5 | Open het bestand in Excel | Accenten (bv. "Groningen") tonen correct dankzij de UTF-8 BOM |
+
+## 15. Robuustheid bij falende bronnen
 
 | # | Stap | Verwacht resultaat |
 |---|---|---|
