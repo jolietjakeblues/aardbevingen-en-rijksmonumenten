@@ -98,3 +98,10 @@ IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
   Cultureel Erfgoed Ontologie.
 - Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over effectgebieden.
 - Leaflet en CARTO voor de kaartweergave.
+
+---
+
+*"The future is unwritten."*  
+— Joe Strummer
+
+---
