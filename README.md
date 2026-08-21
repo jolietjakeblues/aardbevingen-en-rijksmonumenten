@@ -8,7 +8,7 @@ geen schadebeoordeling.
 
 **Live demo:** https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/
 
-Huidige versie: 0.20.4 - zie [CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
+Huidige versie: 0.20.5 - zie [CHANGELOG.md](CHANGELOG.md) voor de volledige versiegeschiedenis.
 
 Standalone HTML/CSS/JS, geen build-stap, geen servercode, geen API-key nodig.
 
@@ -38,6 +38,8 @@ kaart).
   rijksmonumenten, beide typen) als platte, pipe-gescheiden CSV.
 - Filter op monumentaard/oorspronkelijke functie: klikbare labels met aantallen (bv. "Boerderij
   (56)") filteren de kaart en de CSV-export tot alleen die categorie, volledig client-side.
+- Laatst geregistreerde beving: een regel bovenaan de zijbalk toont direct de meest recente
+  beving uit de volledige dataset, als indicatie van hoe actueel de live KNMI-data is.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
 - Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
   plaats van dat de hele pagina faalt.

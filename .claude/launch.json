@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "aardbevingen-en-rijksmonumenten",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8792", "--directory", "C:/AI/aardbevingen-en-rijksmonumenten"],
+      "port": 8792
+    }
+  ]
+}

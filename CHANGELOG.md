@@ -4,6 +4,15 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## v0.20.5 - laatst geregistreerde beving
+
+Nieuwe regel bovenaan de zijbalk (onder de subtitel): "Laatst geregistreerde beving: [datum] ·
+M[magnitude] bij [plaatsnaam]" - een nieuwe `renderLatestEqInfo()`-functie zoekt de meest recente
+beving uit de VOLLEDIGE dataset (1911-heden, los van de tijdslider-animatie, dezelfde regel als
+bij de straal-statistieken en impactindicatie), en toont die direct na het laden. Geeft in één
+oogopslag een indicatie van hoe actueel de live KNMI-data daadwerkelijk is. Live geverifieerd:
+toonde bij het testen een beving van dezelfde dag (21-8-2026, M2.8 bij Zandeweer).
+
 ## v0.20.4 - logo in README
 
 Het eigen beeldmerk (v0.20.2) ook buiten de app zelf zichtbaar gemaakt: nieuw standalone bestand

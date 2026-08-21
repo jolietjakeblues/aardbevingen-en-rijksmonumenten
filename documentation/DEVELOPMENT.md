@@ -13,7 +13,7 @@
   achtergrond zodat het ook leesbaar blijft op GitHub's donkere thema. Losstaand van de inline
   SVG's in `index.html`/`achtergrond.html` (bewust niet gedeeld, om geen refactor-risico te nemen
   op de al werkende, geteste app-pagina's) - gebruikt in `README.md` als logo bovenaan.
-- `aardbevingen_en_rijksmonumenten_v0.20.4.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.4.html`
+- `aardbevingen_en_rijksmonumenten_v0.20.5.html` + `aardbevingen_en_rijksmonumenten_achtergrond_v0.20.5.html`
   - versienummerde momentopname van het pagina-paar (`docs/index.html` + `docs/achtergrond.html`),
   onderling gelinkt (niet naar de `docs/`-versies), voor wie een specifieke release wil
   terugvinden zonder door de git-historie te zoeken. Rechtgezet in v0.19.0 (het vorige,
@@ -130,6 +130,11 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   `.loading`-tekst overal: aardbevingen laden, rijksmonumenten binnen straal, nummer-opzoeking.
 
 ## Mogelijke uitbreidingen (later)
+
+- ~~Laatst geregistreerde beving zichtbaar maken~~ - **gedaan** (v0.20.5): nieuwe regel bovenaan
+  de zijbalk, gevuld door `renderLatestEqInfo()` na het laden. Zoekt de meest recente beving over
+  de volledige dataset (1911-heden), los van de tijdslider - zelfde principe als de
+  straal-statistieken en impactindicatie, die ook altijd op de volledige dataset draaien.
 
 - ~~Filter op monumentaard/oorspronkelijke functie~~ - **gedaan** (v0.20.3): klikbare labels met
   aantallen filteren zowel de kaart als de CSV-export, volledig client-side (geen database nodig,

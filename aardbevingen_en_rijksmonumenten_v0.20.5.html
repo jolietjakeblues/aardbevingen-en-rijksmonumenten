@@ -178,6 +178,7 @@
       <button type="button" id="helpToggle" class="help-toggle" aria-expanded="false" aria-controls="helpBody">Hoe werkt deze kaart?</button>
     </div>
     <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen rechtstreeks van het KNMI, rijksmonumenten via linked data van de RCE.</div>
+    <div id="latestEqInfo" class="hint" aria-live="polite"></div>
     <div id="helpBody" class="help-body" style="display:none">
       <ol>
         <li>Selecteer een aardbeving op de kaart, of zoek op plaatsnaam.</li>
@@ -249,8 +250,8 @@
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
-      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.20.4.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.20.4<br>
+      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.20.5.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
+      Applicatieversie 0.20.5<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
   </div>
@@ -669,6 +670,20 @@
     monSearchLayer = L.layerGroup().addTo(map);
   }
 
+  // Toont de meest recente beving uit de volledige dataset (niet beperkt door de tijdslider),
+  // zodat direct zichtbaar is hoe actueel de live KNMI-data is.
+  function renderLatestEqInfo(events) {
+    var el = $("latestEqInfo");
+    if (!events.length) { el.textContent = ""; return; }
+    var latest = events.reduce(function (a, b) {
+      return new Date(b.date) - new Date(a.date) > 0 ? b : a;
+    });
+    var dateStr = latest.date ? new Date(latest.date).toLocaleDateString("nl-NL") : "onbekende datum";
+    el.textContent = "Laatst geregistreerde beving: " + dateStr +
+      (latest.mag !== null ? " · M" + latest.mag.toFixed(1) : "") +
+      (latest.place ? " bij " + latest.place : "");
+  }
+
   async function loadEarthquakes() {
     $("eqStats").innerHTML = loadingHtml("Aardbevingen laden…");
     try {
@@ -692,6 +707,7 @@
       if (!events.length) throw new Error("Geen van beide KNMI-bronnen kon worden geladen");
 
       state.events = events;
+      renderLatestEqInfo(state.events);
       var years = state.events.map(function (e) { return yearOf(e.date); }).filter(function (y) { return y !== null; });
       state.minYear = years.length ? Math.min.apply(null, years) : null;
       state.maxYear = years.length ? Math.max.apply(null, years) : null;

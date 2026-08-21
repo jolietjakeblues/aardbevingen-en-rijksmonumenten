@@ -13,6 +13,7 @@ licht verschuiven als de brondata verandert.
 | 1.1 | Pagina laden, wachten tot "Selecteer een epicentrum om statistieken te zien" verschijnt | Geen foutmelding; geen "Let op: niet geladen"-waarschuwing |
 | 1.2 | Tel markers op de kaart (bv. via `document.querySelectorAll('path.leaflet-interactive').length`) | ~3.750 markers (induced + tectonic samen), geen van beide categorieën ontbreekt |
 | 1.3 | Herhaal 1.1-1.2 een paar keer kort na elkaar (test de KNMI-cold-start-fix) | Beide categorieën laden consistent, ook als het de eerste request in een tijdje is (timeout 35s + automatische herkansing) |
+| 1.4 | Controleer de regel onder de subtitel na het laden | "Laatst geregistreerde beving: [datum] · M[magnitude] bij [plaatsnaam]" - datum moet de meest recente in de dataset zijn, ongeacht een eventueel actief tijdslider-venster |
 
 ## 2. Rijksmonumenten binnen straal
 
