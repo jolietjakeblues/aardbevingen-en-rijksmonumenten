@@ -1099,11 +1099,11 @@
     nlogFacilityLayer = L.geoJSON(null, {
       pointToLayer: function (feature, latlng) {
         return L.circleMarker(latlng, {
-          radius: 7,
+          radius: 5,
           color: "#ffffff",
-          weight: 2.5,
+          weight: 1.5,
           fillColor: "#d81b60",
-          fillOpacity: 1,
+          fillOpacity: 0.9,
           pane: "markerPane"
         });
       },
