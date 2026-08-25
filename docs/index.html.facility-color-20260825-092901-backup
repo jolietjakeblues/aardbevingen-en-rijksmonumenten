@@ -273,7 +273,7 @@
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
-      <a href="aardbevingen_en_rijksmonumenten_achtergrond_v0.20.5.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
+      <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
       Applicatieversie 0.20.5<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
@@ -407,8 +407,6 @@
   var map, eqLayer, monLayer, monSearchLayer, radiusCircle;
   var nlogFieldLayer, nlogFacilityLayer;
 
-  // Publieke WFS van NLOG / Geologische Dienst Nederland.
-  // Bron: https://www.nlog.nl/bestanden-interactieve-kaart
   var NLOG_WFS_ENDPOINT = "https://www.gdngeoservices.nl/geoserver/nlog/ows";
   var NLOG_FIELD_TYPENAME = "nlog:gdw_ng_field_utm";
   var NLOG_FACILITY_TYPENAME = "nlog:gdw_ng_facility_utm";
@@ -693,47 +691,6 @@
     }).filter(function (m) { return m.lat !== null; });
   }
 
-  function initMap() {
-    map = L.map("map", { center: [52.2, 5.3], zoom: 8 });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(map);
-    // NLOG-velden liggen onder de overige objectlagen zodat aardbevingen en monumenten
-    // goed aanklikbaar blijven.
-    nlogFieldLayer = L.geoJSON(null, {
-      style: styleNlogField,
-      onEachFeature: bindNlogFieldPopup
-    }).addTo(map);
-
-    nlogFacilityLayer = L.geoJSON(null, {
-      pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, {
-          radius: 6,
-          color: "#ffffff",
-          weight: 2,
-          fillColor: "#d81b60",
-          fillOpacity: 1
-        });
-      },
-      onEachFeature: bindNlogFacilityPopup
-    });
-
-    eqLayer = L.layerGroup().addTo(map);
-    monLayer = L.layerGroup().addTo(map);
-    // Aparte laag voor de rijksmonumentnummer-opzoeking: blijft zichtbaar ongeacht straal-
-    // wijzigingen elders (die alleen monLayer legen via renderMonuments()).
-    monSearchLayer = L.layerGroup().addTo(map);
-
-    L.control.layers(null, {
-      "NLOG gas-, olie- en overige velden": nlogFieldLayer,
-      "NLOG mijnbouwlocaties": nlogFacilityLayer
-    }, {
-      collapsed: true,
-      position: "topright"
-    }).addTo(map);
-  }
-
   function nlogProp(properties, candidates) {
     if (!properties) return null;
     var keys = Object.keys(properties);
@@ -747,49 +704,6 @@
       }
     }
     return null;
-  }
-
-  function nlogPopupRows(properties, rows) {
-    return rows.map(function (row) {
-      var value = nlogProp(properties, row.keys);
-      return value === null ? "" : escapeHtml(row.label) + ": " + escapeHtml(value) + "<br>";
-    }).join("");
-  }
-
-  function bindNlogFieldPopup(feature, layer) {
-    var p = feature.properties || {};
-    var name = nlogProp(p, ["FIELD_NAME", "FIELDNAME", "NAME", "VELD_NAAM", "VELDNAAM"]) || "NLOG-veld";
-    var html =
-      '<div class="eq-info">' +
-      "<b>" + escapeHtml(name) + "</b><br>" +
-      nlogPopupRows(p, [
-        { label: "Type", keys: ["RESULT", "FIELD_TYPE", "TYPE"] },
-        { label: "Status", keys: ["STATUS", "FIELD_STATUS"] },
-        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] },
-        { label: "Ontdekking", keys: ["DISCOVERY", "DISCOVERY_DATE"] },
-        { label: "Start productie", keys: ["START_DATE", "PRODUCTION_START"] }
-      ]) +
-      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
-      "</div>";
-    layer.bindPopup(html);
-  }
-
-  function bindNlogFacilityPopup(feature, layer) {
-    var p = feature.properties || {};
-    var name = nlogProp(p, [
-      "FACILITY_NAME", "FACILITY", "NAME", "LOCATION_NAME", "LOC_NAME", "INSTALLATION"
-    ]) || "Mijnbouwlocatie";
-    var html =
-      '<div class="eq-info">' +
-      "<b>" + escapeHtml(name) + "</b><br>" +
-      nlogPopupRows(p, [
-        { label: "Type", keys: ["FACILITY_TYPE", "TYPE", "RESULT"] },
-        { label: "Status", keys: ["STATUS", "FACILITY_STATUS"] },
-        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] }
-      ]) +
-      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
-      "</div>";
-    layer.bindPopup(html);
   }
 
   function nlogFieldKind(properties) {
@@ -825,9 +739,49 @@
     };
   }
 
+  function nlogPopupRows(properties, rows) {
+    return rows.map(function (row) {
+      var value = nlogProp(properties, row.keys);
+      return value === null ? "" : escapeHtml(row.label) + ": " + escapeHtml(value) + "<br>";
+    }).join("");
+  }
+
+  function bindNlogFieldPopup(feature, layer) {
+    var p = feature.properties || {};
+    var name = nlogProp(p, ["FIELD_NAME", "FIELDNAME", "NAME", "VELD_NAAM", "VELDNAAM"]) || "NLOG-veld";
+    layer.bindPopup(
+      '<div class="eq-info">' +
+      "<b>" + escapeHtml(name) + "</b><br>" +
+      nlogPopupRows(p, [
+        { label: "Type", keys: ["RESULT", "FIELD_TYPE", "TYPE"] },
+        { label: "Status", keys: ["STATUS", "FIELD_STATUS"] },
+        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] },
+        { label: "Ontdekking", keys: ["DISCOVERY", "DISCOVERY_DATE"] },
+        { label: "Start productie", keys: ["START_DATE", "PRODUCTION_START"] }
+      ]) +
+      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
+      "</div>"
+    );
+  }
+
+  function bindNlogFacilityPopup(feature, layer) {
+    var p = feature.properties || {};
+    var name = nlogProp(p, ["FACILITY_NAME", "FACILITY", "NAME", "LOCATION_NAME", "LOC_NAME", "INSTALLATION"]) || "Mijnbouwlocatie";
+    layer.bindPopup(
+      '<div class="eq-info">' +
+      "<b>" + escapeHtml(name) + "</b><br>" +
+      nlogPopupRows(p, [
+        { label: "Type", keys: ["FACILITY_TYPE", "TYPE", "RESULT"] },
+        { label: "Status", keys: ["STATUS", "FACILITY_STATUS"] },
+        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] }
+      ]) +
+      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
+      "</div>"
+    );
+  }
+
   function isNamFeature(feature) {
-    var p = (feature && feature.properties) || {};
-    var operator = nlogProp(p, ["OPERATOR", "OPERATOR_NAME"]);
+    var operator = nlogProp((feature && feature.properties) || {}, ["OPERATOR", "OPERATOR_NAME"]);
     if (!operator) return false;
     var s = String(operator).toLowerCase();
     return s.indexOf("nederlandse aardolie maatschappij") >= 0 ||
@@ -846,35 +800,27 @@
     var facilities = filterNlogFeatures(state.nlogFacilities);
 
     nlogFieldLayer.clearLayers();
-    nlogFieldLayer.addData({
-      type: "FeatureCollection",
-      features: fields
-    });
+    nlogFieldLayer.addData({ type: "FeatureCollection", features: fields });
 
     nlogFacilityLayer.clearLayers();
-    nlogFacilityLayer.addData({
-      type: "FeatureCollection",
-      features: facilities
-    });
+    nlogFacilityLayer.addData({ type: "FeatureCollection", features: facilities });
 
     if (state.nlogShowFields) {
       if (!map.hasLayer(nlogFieldLayer)) map.addLayer(nlogFieldLayer);
-    } else {
-      if (map.hasLayer(nlogFieldLayer)) map.removeLayer(nlogFieldLayer);
+    } else if (map.hasLayer(nlogFieldLayer)) {
+      map.removeLayer(nlogFieldLayer);
     }
 
     if (state.nlogShowFacilities) {
       if (!map.hasLayer(nlogFacilityLayer)) map.addLayer(nlogFacilityLayer);
-    } else {
-      if (map.hasLayer(nlogFacilityLayer)) map.removeLayer(nlogFacilityLayer);
+    } else if (map.hasLayer(nlogFacilityLayer)) {
+      map.removeLayer(nlogFacilityLayer);
     }
 
     var statusEl = $("nlogStatus");
     if (statusEl) {
-      var filterLabel = state.nlogOperatorFilter === "nam" ? "NAM" : "alle operators";
-      statusEl.textContent =
-        fields.length + " velden en " + facilities.length +
-        " mijnbouwlocaties (" + filterLabel + ").";
+      var label = state.nlogOperatorFilter === "nam" ? "NAM" : "alle operators";
+      statusEl.textContent = fields.length + " velden en " + facilities.length + " mijnbouwlocaties (" + label + ").";
     }
   }
 
@@ -890,7 +836,6 @@
         renderNlogLayers();
       });
     }
-
     if (fieldsToggle) {
       fieldsToggle.checked = state.nlogShowFields;
       fieldsToggle.addEventListener("change", function () {
@@ -898,7 +843,6 @@
         renderNlogLayers();
       });
     }
-
     if (facilitiesToggle) {
       facilitiesToggle.checked = state.nlogShowFacilities;
       facilitiesToggle.addEventListener("change", function () {
@@ -940,26 +884,45 @@
       fetchNlogGeoJson(NLOG_FACILITY_TYPENAME)
     ]);
 
-    if (results[0].status === "fulfilled") {
-      state.nlogFields = results[0].value.features || [];
-    } else {
-      state.nlogFields = [];
-      console.warn("NLOG-velden konden niet worden geladen:", results[0].reason);
-    }
+    state.nlogFields = results[0].status === "fulfilled" ? (results[0].value.features || []) : [];
+    state.nlogFacilities = results[1].status === "fulfilled" ? (results[1].value.features || []) : [];
 
-    if (results[1].status === "fulfilled") {
-      state.nlogFacilities = results[1].value.features || [];
-    } else {
-      state.nlogFacilities = [];
-      console.warn("NLOG-mijnbouwlocaties konden niet worden geladen:", results[1].reason);
-    }
+    if (results[0].status !== "fulfilled") console.warn("NLOG-velden konden niet worden geladen:", results[0].reason);
+    if (results[1].status !== "fulfilled") console.warn("NLOG-mijnbouwlocaties konden niet worden geladen:", results[1].reason);
 
     renderNlogLayers();
+  }
 
-    if (!state.nlogFields.length && !state.nlogFacilities.length) {
-      var statusEl = $("nlogStatus");
-      if (statusEl) statusEl.textContent = "NLOG-data kon niet worden geladen.";
-    }
+  function initMap() {
+    map = L.map("map", { center: [52.2, 5.3], zoom: 8 });
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    nlogFieldLayer = L.geoJSON(null, {
+      style: styleNlogField,
+      onEachFeature: bindNlogFieldPopup
+    }).addTo(map);
+
+    nlogFacilityLayer = L.geoJSON(null, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius: 4,
+          color: "#111111",
+          weight: 1,
+          fillColor: "#7a3e9d",
+          fillOpacity: 0.9
+        });
+      },
+      onEachFeature: bindNlogFacilityPopup
+    });
+
+    eqLayer = L.layerGroup().addTo(map);
+    monLayer = L.layerGroup().addTo(map);
+    // Aparte laag voor de rijksmonumentnummer-opzoeking: blijft zichtbaar ongeacht straal-
+    // wijzigingen elders (die alleen monLayer legen via renderMonuments()).
+    monSearchLayer = L.layerGroup().addTo(map);
   }
 
   // Toont de meest recente beving uit de volledige dataset (niet beperkt door de tijdslider),
@@ -1639,11 +1602,6 @@
       '<div class="legend-control-body" style="display:none">' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["geïnduceerde aardbevingen"] + '"></span>Geïnduceerde aardbeving</div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:' + CATEGORY_COLORS["tektonische aardbevingen"] + '"></span>Tektonische aardbeving</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:#c9b27c;border:1px solid #6f5b3e"></span>NLOG gasveld</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:#8a8a8a;border:1px solid #4d4d4d"></span>NLOG olieveld</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:#7fb3b5;border:1px solid #2f6f73"></span>NLOG geothermie</div>' +
-      '<div class="legend-item"><span class="legend-square" style="background:#a995b8;border:1px solid #6b5a7a"></span>NLOG opslag</div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#d81b60;border:2px solid #fff;box-shadow:0 0 0 1px #777"></span>NLOG mijnbouwlocatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur - ruim binnen indicatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur - net binnen indicatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten indicatie</div>' +
