@@ -491,23 +491,6 @@
     return best;
   }
 
-  function nearestLoadedMonument(lat, lon) {
-    if (!state.lastMonuments || !state.lastMonuments.length) return null;
-
-    var best = null;
-    var bestKm = Infinity;
-
-    state.lastMonuments.forEach(function (m) {
-      if (m.lat === null || m.lon === null) return;
-      var km = haversineKm(lat, lon, m.lat, m.lon);
-      if (km < bestKm) {
-        bestKm = km;
-        best = { monument: m, distKm: km };
-      }
-    });
-
-    return best;
-  }
   function nlogFeatureName(feature, candidates, fallback) {
     var p = feature && feature.properties ? feature.properties : {};
     return nlogProp(p, candidates) || fallback;
@@ -523,7 +506,6 @@
     var eq = nearestEarthquake(lat, lon);
     var field = nearestNlogLayer(nlogFieldLayer, lat, lon);
     var facility = nearestNlogLayer(nlogFacilityLayer, lat, lon);
-    var monument = nearestLoadedMonument(lat, lon);
 
     var fieldName = field
       ? nlogFeatureName(
@@ -560,20 +542,6 @@
       ? facilityName + " · " + formatWhatIsHereDistance(facility)
       : "Geen mijnbouwlocatie beschikbaar.";
 
-    var monumentText;
-    if (monument) {
-      var m = monument.monument;
-      var monumentLabel = m.naam
-        ? m.naam + " (nr. " + m.nr + ")"
-        : "Rijksmonument nr. " + m.nr;
-      monumentText =
-        monumentLabel +
-        " · " + monument.distKm.toFixed(1) + " km" +
-        (m.type ? " · " + (m.type === "archeologisch" ? "archeologisch" : "onroerend gebouwd") : "");
-    } else {
-      monumentText = "Geen rijksmonumentgegevens geladen voor deze locatie.";
-    }
-
     var html =
       '<div class="eq-info">' +
       '<b>Locatie</b><br>' +
@@ -583,9 +551,7 @@
       "<b>Dichtstbijzijnde NLOG-veld</b><br>" +
       escapeHtml(fieldText) + "<br><br>" +
       "<b>Dichtstbijzijnde mijnbouwlocatie</b><br>" +
-      escapeHtml(facilityText) + "<br><br>" +
-      "<b>Dichtstbijzijnde geladen rijksmonument</b><br>" +
-      escapeHtml(monumentText) +
+      escapeHtml(facilityText) +
       "</div>";
 
     var statusEl = $("whatIsHereStatus");
