@@ -224,6 +224,23 @@
       <div id="whatIsHereStatus" class="hint" style="margin-top:6px;">Klik op de knop en daarna op een plek op de kaart.</div>
     </div>
 
+    <div class="panel" id="broLegendPanel" style="display:none;">
+      <h2>BRO legenda</h2>
+
+      <div class="hint">
+        <b>Grondwaterspiegeldiepte (Gt)</b><br>
+        De grondwatertrap is een klasse op basis van de langjarig gemiddelde hoogste en laagste
+        grondwaterstand (GHG en GLG). Gebruik de kaart als indicatie op regionaal niveau.
+      </div>
+
+      <div class="hint" style="margin-top:8px;">
+        <b>Bodemkaart</b><br>
+        De Bodemkaart beschrijft bodemklassen en de opbouw van de bodem. Voor uitleg per bodemcode:
+        <a href="https://legenda-bodemkaart.bodemdata.nl/" target="_blank" rel="noopener">
+          bekijk de officiële BRO-bodemlegenda
+        </a>.
+      </div>
+    </div>
     <div class="panel" id="nlogPanel">
       <h2>NLOG mijnbouw</h2>
 
@@ -1335,6 +1352,16 @@
     }
   }
 
+  function updateBroLegendVisibility() {
+    var panel = $("broLegendPanel");
+    if (!panel || !map) return;
+
+    var visible =
+      (typeof broGrondwaterLayer !== "undefined" && map.hasLayer(broGrondwaterLayer)) ||
+      (typeof broBodemkaartLayer !== "undefined" && map.hasLayer(broBodemkaartLayer));
+
+    panel.style.display = visible ? "" : "none";
+  }
   function initMap() {
     var permalink = parsePermalinkHash();
     var startCenter = (
@@ -1428,12 +1455,14 @@
     map.on("overlayadd", function (e) {
       if (e.layer === broGrondwaterLayer) state.permalinkBroGt = true;
       if (e.layer === broBodemkaartLayer) state.permalinkBroSoil = true;
+      updateBroLegendVisibility();
       updatePermalinkHash();
     });
 
     map.on("overlayremove", function (e) {
       if (e.layer === broGrondwaterLayer) state.permalinkBroGt = false;
       if (e.layer === broBodemkaartLayer) state.permalinkBroSoil = false;
+      updateBroLegendVisibility();
       updatePermalinkHash();
     });
 
@@ -2301,6 +2330,7 @@
       state.permalinkWhatIsHere.lon
     );
   }
+  updateBroLegendVisibility();
   updatePermalinkHash();
   loadNlogLayers();
   loadEarthquakes();
