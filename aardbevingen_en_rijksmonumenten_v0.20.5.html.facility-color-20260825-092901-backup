@@ -709,11 +709,11 @@
     nlogFacilityLayer = L.geoJSON(null, {
       pointToLayer: function (feature, latlng) {
         return L.circleMarker(latlng, {
-          radius: 6,
-          color: "#ffffff",
-          weight: 2,
-          fillColor: "#d81b60",
-          fillOpacity: 1
+          radius: 4,
+          color: "#111111",
+          weight: 1,
+          fillColor: "#7a3e9d",
+          fillOpacity: 0.9
         });
       },
       onEachFeature: bindNlogFacilityPopup
@@ -1643,7 +1643,7 @@
       '<div class="legend-item"><span class="legend-square" style="background:#8a8a8a;border:1px solid #4d4d4d"></span>NLOG olieveld</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:#7fb3b5;border:1px solid #2f6f73"></span>NLOG geothermie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:#a995b8;border:1px solid #6b5a7a"></span>NLOG opslag</div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#d81b60;border:2px solid #fff;box-shadow:0 0 0 1px #777"></span>NLOG mijnbouwlocatie</div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#7a3e9d;border:1px solid #111"></span>NLOG mijnbouwlocatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_IN + '"></span>Rijksmonument-kleur - ruim binnen indicatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_NET + '"></span>Rijksmonument-kleur - net binnen indicatie</div>' +
       '<div class="legend-item"><span class="legend-square" style="background:' + MONUMENT_COLOR_OUT + '"></span>Rijksmonument-kleur - buiten indicatie</div>' +

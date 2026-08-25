@@ -1,278 +1,41 @@
 ﻿$ErrorActionPreference = "Stop"
 
-$root = Get-Location
-$target = Join-Path $root "docs\index.html"
-
-if (-not (Test-Path $target)) {
-    throw "GitHub Pages-bestand niet gevonden: $target"
-}
-
-# Zoek de nieuwste back-up die het eerdere synchronisatiescript maakte.
-$backups = Get-ChildItem -Path (Join-Path $root "docs") -Filter "index.html.*-backup" |
-    Sort-Object LastWriteTime -Descending
-
-if (-not $backups -or $backups.Count -eq 0) {
-    throw "Geen docs/index.html-back-up gevonden. Verwacht iets als docs/index.html.20260824-....-backup"
-}
-
-$backup = $backups[0].FullName
-Write-Host "Herstel eerst bestaande Pages-versie uit:"
-Write-Host "  $backup"
-
-Copy-Item $backup $target -Force
-
-$content = Get-Content -Raw -Encoding UTF8 $target
+$files = @(
+    "docs\index.html",
+    "aardbevingen_en_rijksmonumenten_v0.20.5.html"
+)
 
 function Replace-Once {
     param(
         [string]$Text,
         [string]$Old,
         [string]$New,
-        [string]$Label
+        [string]$Label,
+        [string]$File
     )
 
     $first = $Text.IndexOf($Old)
     if ($first -lt 0) {
-        throw "Kon invoegpunt niet vinden: $Label. De herstelde docs/index.html wijkt af van de verwachte structuur."
+        throw "Kon '$Label' niet vinden in $File"
     }
-
     $second = $Text.IndexOf($Old, $first + $Old.Length)
     if ($second -ge 0) {
-        throw "Invoegpunt komt meer dan één keer voor: $Label."
+        throw "'$Label' komt meer dan één keer voor in $File"
     }
-
     return $Text.Substring(0, $first) + $New + $Text.Substring($first + $Old.Length)
 }
 
-# NLOG UI in sidebar, zonder bestaande erfgoedpanelen te vervangen.
-$anchor = @'
-    <div class="panel">
-      <h2>Aardbevingen binnen straal</h2>
-'@
-
-$insert = @'
-    <div class="panel" id="nlogPanel">
-      <h2>NLOG mijnbouw</h2>
-
-      <label for="nlogOperatorFilter" class="hint" style="display:block;margin-bottom:4px;">Operator</label>
-      <select id="nlogOperatorFilter" style="width:100%;box-sizing:border-box;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:4px;background:#fff;">
-        <option value="all">Alle operators</option>
-        <option value="nam">Alleen NAM</option>
-      </select>
-
-      <div style="margin-top:8px;">
-        <label style="display:block;font-size:12px;margin-bottom:4px;">
-          <input type="checkbox" id="nlogFieldsToggle" checked>
-          Velden tonen
-        </label>
-        <label style="display:block;font-size:12px;">
-          <input type="checkbox" id="nlogFacilitiesToggle">
-          Mijnbouwlocaties tonen
-        </label>
-      </div>
-
-      <div id="nlogStatus" class="hint" style="margin-top:6px;">NLOG-data laden…</div>
-    </div>
-
-    <div class="panel">
-      <h2>Aardbevingen binnen straal</h2>
-'@
-
-$content = Replace-Once $content $anchor $insert "NLOG sidebar"
-
-# NLOG constants en state/layers.
-$content = Replace-Once $content `
-'  var map, eqLayer, monLayer, monSearchLayer, radiusCircle;' `
-@'
-  var map, eqLayer, monLayer, monSearchLayer, radiusCircle;
-  var nlogFieldLayer, nlogFacilityLayer;
-
-  var NLOG_WFS_ENDPOINT = "https://www.gdngeoservices.nl/geoserver/nlog/ows";
-  var NLOG_FIELD_TYPENAME = "nlog:gdw_ng_field_utm";
-  var NLOG_FACILITY_TYPENAME = "nlog:gdw_ng_facility_utm";
-  var NLOG_SOURCE_URL = "https://www.nlog.nl/bestanden-interactieve-kaart";
-'@ `
-"NLOG variabelen"
-
-$content = Replace-Once $content `
-'    monumentFilter: null  // { field: "type"|"functieOorspr", value: string } of null (toon alles)' `
-@'
-    monumentFilter: null, // { field: "type"|"functieOorspr", value: string } of null (toon alles)
-    nlogFields: [],
-    nlogFacilities: [],
-    nlogOperatorFilter: "all",
-    nlogShowFields: true,
-    nlogShowFacilities: false
-'@ `
-"NLOG state"
-
-# Voeg NLOG functies vlak vóór initMap toe.
-$initMapAnchor = @'
-  function initMap() {
-'@
-
-$nlogFunctions = @'
-  function nlogProp(properties, candidates) {
-    if (!properties) return null;
-    var keys = Object.keys(properties);
-    for (var i = 0; i < candidates.length; i++) {
-      var wanted = candidates[i].toLowerCase();
-      for (var j = 0; j < keys.length; j++) {
-        if (keys[j].toLowerCase() === wanted) {
-          var value = properties[keys[j]];
-          if (value !== null && value !== undefined && String(value).trim() !== "") return value;
-        }
-      }
-    }
-    return null;
-  }
-
-  function nlogFieldKind(properties) {
-    var raw = [
-      nlogProp(properties, ["RESULT"]),
-      nlogProp(properties, ["FIELD_TYPE"]),
-      nlogProp(properties, ["TYPE"])
-    ].filter(Boolean).join(" ").toLowerCase();
-
-    if (raw.indexOf("gas") >= 0) return "gas";
-    if (raw.indexOf("olie") >= 0 || raw.indexOf("oil") >= 0) return "oil";
-    if (raw.indexOf("geother") >= 0 || raw.indexOf("aardwarm") >= 0) return "geothermal";
-    if (raw.indexOf("opslag") >= 0 || raw.indexOf("storage") >= 0) return "storage";
-    return "other";
-  }
-
-  function styleNlogField(feature) {
-    var kind = nlogFieldKind((feature && feature.properties) || {});
-    var styles = {
-      gas:        { color: "#6f5b3e", fillColor: "#c9b27c" },
-      oil:        { color: "#4d4d4d", fillColor: "#8a8a8a" },
-      geothermal: { color: "#2f6f73", fillColor: "#7fb3b5" },
-      storage:    { color: "#6b5a7a", fillColor: "#a995b8" },
-      other:      { color: "#777777", fillColor: "#b8b8b8" }
-    };
-    var s = styles[kind] || styles.other;
-    return {
-      color: s.color,
-      weight: 1.2,
-      opacity: 0.85,
-      fillColor: s.fillColor,
-      fillOpacity: 0.18
-    };
-  }
-
-  function nlogPopupRows(properties, rows) {
-    return rows.map(function (row) {
-      var value = nlogProp(properties, row.keys);
-      return value === null ? "" : escapeHtml(row.label) + ": " + escapeHtml(value) + "<br>";
-    }).join("");
-  }
-
-  function bindNlogFieldPopup(feature, layer) {
-    var p = feature.properties || {};
-    var name = nlogProp(p, ["FIELD_NAME", "FIELDNAME", "NAME", "VELD_NAAM", "VELDNAAM"]) || "NLOG-veld";
-    layer.bindPopup(
-      '<div class="eq-info">' +
-      "<b>" + escapeHtml(name) + "</b><br>" +
-      nlogPopupRows(p, [
-        { label: "Type", keys: ["RESULT", "FIELD_TYPE", "TYPE"] },
-        { label: "Status", keys: ["STATUS", "FIELD_STATUS"] },
-        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] },
-        { label: "Ontdekking", keys: ["DISCOVERY", "DISCOVERY_DATE"] },
-        { label: "Start productie", keys: ["START_DATE", "PRODUCTION_START"] }
-      ]) +
-      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
-      "</div>"
-    );
-  }
-
-  function bindNlogFacilityPopup(feature, layer) {
-    var p = feature.properties || {};
-    var name = nlogProp(p, ["FACILITY_NAME", "FACILITY", "NAME", "LOCATION_NAME", "LOC_NAME", "INSTALLATION"]) || "Mijnbouwlocatie";
-    layer.bindPopup(
-      '<div class="eq-info">' +
-      "<b>" + escapeHtml(name) + "</b><br>" +
-      nlogPopupRows(p, [
-        { label: "Type", keys: ["FACILITY_TYPE", "TYPE", "RESULT"] },
-        { label: "Status", keys: ["STATUS", "FACILITY_STATUS"] },
-        { label: "Operator", keys: ["OPERATOR", "OPERATOR_NAME"] }
-      ]) +
-      '<a href="' + NLOG_SOURCE_URL + '" target="_blank" rel="noopener">Bron: NLOG</a>' +
-      "</div>"
-    );
-  }
-
-  function isNamFeature(feature) {
-    var operator = nlogProp((feature && feature.properties) || {}, ["OPERATOR", "OPERATOR_NAME"]);
-    if (!operator) return false;
-    var s = String(operator).toLowerCase();
-    return s.indexOf("nederlandse aardolie maatschappij") >= 0 ||
-           s === "nam" ||
-           s.indexOf("nam b.v.") >= 0 ||
-           s.indexOf("nam bv") >= 0;
-  }
-
-  function filterNlogFeatures(features) {
-    if (state.nlogOperatorFilter !== "nam") return features;
-    return features.filter(isNamFeature);
-  }
-
-  function renderNlogLayers() {
-    var fields = filterNlogFeatures(state.nlogFields);
-    var facilities = filterNlogFeatures(state.nlogFacilities);
-
-    nlogFieldLayer.clearLayers();
-    nlogFieldLayer.addData({ type: "FeatureCollection", features: fields });
-
-    nlogFacilityLayer.clearLayers();
-    nlogFacilityLayer.addData({ type: "FeatureCollection", features: facilities });
-
-    if (state.nlogShowFields) {
-      if (!map.hasLayer(nlogFieldLayer)) map.addLayer(nlogFieldLayer);
-    } else if (map.hasLayer(nlogFieldLayer)) {
-      map.removeLayer(nlogFieldLayer);
+foreach ($rel in $files) {
+    $path = Join-Path (Get-Location) $rel
+    if (-not (Test-Path $path)) {
+        Write-Host "Overslaan, niet gevonden: $path"
+        continue
     }
 
-    if (state.nlogShowFacilities) {
-      if (!map.hasLayer(nlogFacilityLayer)) map.addLayer(nlogFacilityLayer);
-    } else if (map.hasLayer(nlogFacilityLayer)) {
-      map.removeLayer(nlogFacilityLayer);
-    }
+    $content = Get-Content -Raw -Encoding UTF8 $path
 
-    var statusEl = $("nlogStatus");
-    if (statusEl) {
-      var label = state.nlogOperatorFilter === "nam" ? "NAM" : "alle operators";
-      statusEl.textContent = fields.length + " velden en " + facilities.length + " mijnbouwlocaties (" + label + ").";
-    }
-  }
-
-  function initNlogControls() {
-    var select = $("nlogOperatorFilter");
-    var fieldsToggle = $("nlogFieldsToggle");
-    var facilitiesToggle = $("nlogFacilitiesToggle");
-
-    if (select) {
-      select.value = state.nlogOperatorFilter;
-      select.addEventListener("change", function () {
-        state.nlogOperatorFilter = select.value;
-        renderNlogLayers();
-      });
-    }
-    if (fieldsToggle) {
-      fieldsToggle.checked = state.nlogShowFields;
-      fieldsToggle.addEventListener("change", function () {
-        state.nlogShowFields = fieldsToggle.checked;
-        renderNlogLayers();
-      });
-    }
-    if (facilitiesToggle) {
-      facilitiesToggle.checked = state.nlogShowFacilities;
-      facilitiesToggle.addEventListener("change", function () {
-        state.nlogShowFacilities = facilitiesToggle.checked;
-        renderNlogLayers();
-      });
-    }
-  }
-
+    # Vervang de huidige fetch/load-sectie door capability-discovery + fallback.
+    $old = @'
   function buildNlogWfsUrl(typeName) {
     var params = new URLSearchParams({
       service: "WFS",
@@ -313,68 +76,220 @@ $nlogFunctions = @'
 
     renderNlogLayers();
   }
-
-  function initMap() {
 '@
 
-$content = Replace-Once $content $initMapAnchor $nlogFunctions "NLOG functies"
+    $new = @'
+  var nlogResolvedTypeNames = null;
 
-# Voeg de twee lagen toe direct na de basemap, zonder bestaande erfgoedlagen te vervangen.
-$basemapAnchor = @'
-    }).addTo(map);
-    eqLayer = L.layerGroup().addTo(map);
-'@
+  async function resolveNlogTypeNames() {
+    if (nlogResolvedTypeNames) return nlogResolvedTypeNames;
 
-$basemapInsert = @'
-    }).addTo(map);
-
-    nlogFieldLayer = L.geoJSON(null, {
-      style: styleNlogField,
-      onEachFeature: bindNlogFieldPopup
-    }).addTo(map);
-
-    nlogFacilityLayer = L.geoJSON(null, {
-      pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, {
-          radius: 4,
-          color: "#111111",
-          weight: 1,
-          fillColor: "#7a3e9d",
-          fillOpacity: 0.9
-        });
-      },
-      onEachFeature: bindNlogFacilityPopup
+    var params = new URLSearchParams({
+      service: "WFS",
+      version: "2.0.0",
+      request: "GetCapabilities"
     });
 
-    eqLayer = L.layerGroup().addTo(map);
+    var res = await fetchWithTimeout(
+      NLOG_WFS_ENDPOINT + "?" + params.toString(),
+      { headers: { Accept: "application/xml,text/xml,*/*" } },
+      30000
+    );
+
+    if (!res.ok) throw new Error("NLOG GetCapabilities mislukt (" + res.status + ")");
+
+    var xmlText = await res.text();
+    var xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (xml.querySelector("parsererror")) throw new Error("NLOG GetCapabilities gaf ongeldige XML");
+
+    var names = Array.from(xml.getElementsByTagNameNS("*", "FeatureType")).map(function (ft) {
+      var nameEl = ft.getElementsByTagNameNS("*", "Name")[0];
+      return nameEl ? nameEl.textContent.trim() : "";
+    }).filter(Boolean);
+
+    function findType(suffix, fallback) {
+      var wanted = suffix.toLowerCase();
+      var match = names.find(function (name) {
+        var low = name.toLowerCase();
+        return low === wanted || low.endsWith(":" + wanted);
+      });
+      return match || fallback;
+    }
+
+    nlogResolvedTypeNames = {
+      field: findType("gdw_ng_field_utm", NLOG_FIELD_TYPENAME),
+      facility: findType("gdw_ng_facility_utm", NLOG_FACILITY_TYPENAME)
+    };
+
+    console.info("NLOG WFS-laagnamen:", nlogResolvedTypeNames);
+    return nlogResolvedTypeNames;
+  }
+
+  function buildNlogWfsUrl(typeName, version) {
+    version = version || "2.0.0";
+    var params = new URLSearchParams({
+      service: "WFS",
+      version: version,
+      request: "GetFeature",
+      outputFormat: "application/json",
+      srsName: "EPSG:4326"
+    });
+
+    // WFS 2.0 gebruikt typeNames; WFS 1.1 gebruikt typeName.
+    if (version === "2.0.0") params.set("typeNames", typeName);
+    else params.set("typeName", typeName);
+
+    return NLOG_WFS_ENDPOINT + "?" + params.toString();
+  }
+
+  async function fetchNlogGeoJson(typeName) {
+    var attempts = ["2.0.0", "1.1.0"];
+    var lastError = null;
+
+    for (var i = 0; i < attempts.length; i++) {
+      var version = attempts[i];
+      try {
+        var res = await fetchWithTimeout(
+          buildNlogWfsUrl(typeName, version),
+          { headers: { Accept: "application/geo+json, application/json,*/*" } },
+          45000
+        );
+
+        var body = await res.text();
+
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status + " via WFS " + version + ": " + body.slice(0, 180));
+        }
+
+        var json;
+        try {
+          json = JSON.parse(body);
+        } catch (e) {
+          throw new Error("geen GeoJSON via WFS " + version + ": " + body.slice(0, 180));
+        }
+
+        if (!json || json.type !== "FeatureCollection" || !Array.isArray(json.features)) {
+          throw new Error("onverwacht GeoJSON-formaat via WFS " + version);
+        }
+
+        console.info("NLOG " + typeName + ": " + json.features.length + " features via WFS " + version);
+        return json;
+      } catch (err) {
+        lastError = err;
+        console.warn("NLOG poging mislukt voor " + typeName + " via WFS " + version + ":", err);
+      }
+    }
+
+    throw lastError || new Error("NLOG-laag kon niet worden geladen");
+  }
+
+  async function loadNlogLayers() {
+    var statusEl = $("nlogStatus");
+    if (statusEl) statusEl.textContent = "NLOG-laagnamen bepalen…";
+
+    var typeNames;
+    try {
+      typeNames = await resolveNlogTypeNames();
+    } catch (err) {
+      // GetCapabilities mag de data niet blokkeren. Val terug op bekende laagnamen.
+      console.warn("NLOG GetCapabilities niet beschikbaar; bekende laagnamen worden gebruikt:", err);
+      typeNames = {
+        field: NLOG_FIELD_TYPENAME,
+        facility: NLOG_FACILITY_TYPENAME
+      };
+    }
+
+    if (statusEl) statusEl.textContent = "NLOG-data laden…";
+
+    var results = await Promise.allSettled([
+      fetchNlogGeoJson(typeNames.field),
+      fetchNlogGeoJson(typeNames.facility)
+    ]);
+
+    state.nlogFields = results[0].status === "fulfilled"
+      ? (results[0].value.features || [])
+      : [];
+
+    state.nlogFacilities = results[1].status === "fulfilled"
+      ? (results[1].value.features || [])
+      : [];
+
+    var errors = [];
+
+    if (results[0].status !== "fulfilled") {
+      console.error("NLOG-velden konden niet worden geladen:", results[0].reason);
+      errors.push("velden: " + (results[0].reason && results[0].reason.message ? results[0].reason.message : "onbekende fout"));
+    }
+
+    if (results[1].status !== "fulfilled") {
+      console.error("NLOG-mijnbouwlocaties konden niet worden geladen:", results[1].reason);
+      errors.push("mijnbouwlocaties: " + (results[1].reason && results[1].reason.message ? results[1].reason.message : "onbekende fout"));
+    }
+
+    renderNlogLayers();
+
+    if (statusEl && errors.length) {
+      var loadedText = state.nlogFields.length + " velden, " + state.nlogFacilities.length + " mijnbouwlocaties.";
+      statusEl.innerHTML =
+        escapeHtml(loadedText) +
+        '<br><span class="error-msg">NLOG-fout: ' + escapeHtml(errors.join(" | ")) + "</span>";
+    } else if (statusEl && state.nlogFacilities.length === 0) {
+      statusEl.innerHTML =
+        escapeHtml(state.nlogFields.length + " velden geladen.") +
+        '<br><span class="error-msg">Let op: de facility-laag gaf 0 objecten terug.</span>';
+    }
+  }
 '@
 
-$content = Replace-Once $content $basemapAnchor $basemapInsert "NLOG lagen"
+    $content = Replace-Once $content $old $new "NLOG WFS loader" $rel
 
-# Initialisatie, zonder bestaande init-calls weg te halen.
-$content = Replace-Once $content `
-'  initDownloadCsv();' `
-@'
-  initDownloadCsv();
-  initNlogControls();
-  loadNlogLayers();
-'@ `
-"NLOG initialisatie"
+    # Maak facilities nog duidelijker en boven andere vectoren.
+    $oldMarker = @'
+        return L.circleMarker(latlng, {
+          radius: 6,
+          color: "#ffffff",
+          weight: 2,
+          fillColor: "#d81b60",
+          fillOpacity: 1
+        });
+'@
 
-# Schrijf met een extra herstelbackup.
-$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$safety = "$target.pre-nlog-surgical-$timestamp-backup"
-Copy-Item $target $safety -Force
-Set-Content -Path $target -Value $content -Encoding UTF8 -NoNewline
+    $newMarker = @'
+        return L.circleMarker(latlng, {
+          radius: 7,
+          color: "#ffffff",
+          weight: 2.5,
+          fillColor: "#d81b60",
+          fillOpacity: 1,
+          pane: "markerPane"
+        });
+'@
+
+    if ($content.Contains($oldMarker)) {
+        $content = $content.Replace($oldMarker, $newMarker)
+    }
+
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backup = "$path.facility-fix-$timestamp-backup"
+    Copy-Item $path $backup -Force
+    Set-Content -Path $path -Value $content -Encoding UTF8 -NoNewline
+
+    Write-Host "Gefixt:   $path"
+    Write-Host "Back-up:  $backup"
+}
 
 Write-Host ""
-Write-Host "Herstel + chirurgische NLOG-integratie gereed."
-Write-Host "Hersteld uit: $backup"
-Write-Host "Nieuwe safety backup: $safety"
+Write-Host "Facility-fix toegepast."
+Write-Host ""
+Write-Host "De kaart doet nu:"
+Write-Host "  1. WFS GetCapabilities uitlezen"
+Write-Host "  2. actuele facility-laagnaam automatisch vinden"
+Write-Host "  3. WFS 2.0 proberen"
+Write-Host "  4. bij fout WFS 1.1 proberen"
+Write-Host "  5. concrete fout in de zijbalk tonen"
 Write-Host ""
 Write-Host "Test:"
 Write-Host "  python -m http.server 8000"
 Write-Host "  http://localhost:8000/docs/"
 Write-Host ""
-Write-Host "Controle:"
-Write-Host "  git diff -- docs/index.html"
+Write-Host "Ververs met Ctrl+F5 en vink 'Mijnbouwlocaties tonen' aan."
