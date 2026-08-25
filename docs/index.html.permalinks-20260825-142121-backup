@@ -407,9 +407,7 @@
     nlogOperatorFilter: "all",
     nlogShowFields: true,
     nlogShowFacilities: false,
-    whatIsHereArmed: false,
-    permalinkBase: "map",
-    permalinkWhatIsHere: null
+    whatIsHereArmed: false
   };
   var timePlayTimer = null;
 
@@ -618,12 +616,7 @@
       btn.textContent = "Kies locatie op kaart";
       map.getContainer().style.cursor = "";
 
-      state.permalinkWhatIsHere = {
-        lat: e.latlng.lat,
-        lon: e.latlng.lng
-      };
       showWhatIsHere(e.latlng.lat, e.latlng.lng);
-      updatePermalinkHash();
     });
   }
 
@@ -1275,65 +1268,12 @@
         "</span>";
     }
   }
-  function parsePermalinkHash() {
-    var raw = window.location.hash ? window.location.hash.substring(1) : "";
-    var params = new URLSearchParams(raw);
-    var lat = parseFloat(params.get("lat"));
-    var lon = parseFloat(params.get("lon"));
-    var zoom = parseInt(params.get("z"), 10);
-    var base = params.get("base");
-    var hereLat = parseFloat(params.get("hereLat"));
-    var hereLon = parseFloat(params.get("hereLon"));
-
-    return {
-      lat: Number.isFinite(lat) ? lat : null,
-      lon: Number.isFinite(lon) ? lon : null,
-      zoom: Number.isFinite(zoom) ? zoom : null,
-      base: base === "air" ? "air" : "map",
-      hereLat: Number.isFinite(hereLat) ? hereLat : null,
-      hereLon: Number.isFinite(hereLon) ? hereLon : null
-    };
-  }
-
-  function updatePermalinkHash() {
-    if (!map) return;
-    var center = map.getCenter();
-    var params = new URLSearchParams();
-    params.set("lat", center.lat.toFixed(5));
-    params.set("lon", center.lng.toFixed(5));
-    params.set("z", String(map.getZoom()));
-    params.set("base", state.permalinkBase);
-
-    if (state.permalinkWhatIsHere) {
-      params.set("hereLat", state.permalinkWhatIsHere.lat.toFixed(5));
-      params.set("hereLon", state.permalinkWhatIsHere.lon.toFixed(5));
-    }
-
-    var nextHash = "#" + params.toString();
-    if (window.location.hash !== nextHash) {
-      history.replaceState(null, "", nextHash);
-    }
-  }
-
   function initMap() {
-    var permalink = parsePermalinkHash();
-    var startCenter = (
-      permalink.lat !== null && permalink.lon !== null
-    ) ? [permalink.lat, permalink.lon] : [52.2, 5.3];
-    var startZoom = permalink.zoom !== null ? permalink.zoom : 8;
-
-    state.permalinkBase = permalink.base;
-    if (permalink.hereLat !== null && permalink.hereLon !== null) {
-      state.permalinkWhatIsHere = {
-        lat: permalink.hereLat,
-        lon: permalink.hereLon
-      };
-    }
-    map = L.map("map", { center: startCenter, zoom: startZoom });
+    map = L.map("map", { center: [52.2, 5.3], zoom: 8 });
     var cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
       maxZoom: 19
-    });
+    }).addTo(map);
 
     var pdokLuchtfotoLayer = L.tileLayer.wms(
       "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0",
@@ -1346,12 +1286,6 @@
       }
     );
 
-    if (state.permalinkBase === "air") {
-      pdokLuchtfotoLayer.addTo(map);
-    } else {
-      cartoLayer.addTo(map);
-    }
-
     L.control.layers(
       {
         "Kaart": cartoLayer,
@@ -1363,13 +1297,6 @@
         collapsed: true
       }
     ).addTo(map);
-
-    map.on("moveend", updatePermalinkHash);
-
-    map.on("baselayerchange", function (e) {
-      state.permalinkBase = e.layer === pdokLuchtfotoLayer ? "air" : "map";
-      updatePermalinkHash();
-    });
 
     nlogFieldLayer = L.geoJSON(null, {
       style: styleNlogField,
@@ -2229,13 +2156,6 @@
   initDownloadCsv();
   initNlogControls();
   initWhatIsHere();
-  if (state.permalinkWhatIsHere) {
-    showWhatIsHere(
-      state.permalinkWhatIsHere.lat,
-      state.permalinkWhatIsHere.lon
-    );
-  }
-  updatePermalinkHash();
   loadNlogLayers();
   loadEarthquakes();
 })();
