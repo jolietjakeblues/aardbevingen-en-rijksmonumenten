@@ -409,8 +409,7 @@
     nlogShowFacilities: false,
     whatIsHereArmed: false,
     permalinkBase: "map",
-    permalinkWhatIsHere: null,
-    permalinkBroGt: false,     permalinkBroSoil: false
+    permalinkWhatIsHere: null
   };
   var timePlayTimer = null;
 
@@ -1026,7 +1025,6 @@
       select.addEventListener("change", function () {
         state.nlogOperatorFilter = select.value;
         renderNlogLayers();
-        updatePermalinkHash();
       });
     }
     if (fieldsToggle) {
@@ -1034,7 +1032,6 @@
       fieldsToggle.addEventListener("change", function () {
         state.nlogShowFields = fieldsToggle.checked;
         renderNlogLayers();
-        updatePermalinkHash();
       });
     }
     if (facilitiesToggle) {
@@ -1042,7 +1039,6 @@
       facilitiesToggle.addEventListener("change", function () {
         state.nlogShowFacilities = facilitiesToggle.checked;
         renderNlogLayers();
-        updatePermalinkHash();
       });
     }
   }
@@ -1286,11 +1282,6 @@
     var lon = parseFloat(params.get("lon"));
     var zoom = parseInt(params.get("z"), 10);
     var base = params.get("base");
-    var nlog = params.get("nlog");
-    var fields = params.get("fields");
-    var facilities = params.get("facilities");
-    var broGt = params.get("broGt");
-    var broSoil = params.get("broSoil");
     var hereLat = parseFloat(params.get("hereLat"));
     var hereLon = parseFloat(params.get("hereLon"));
 
@@ -1300,12 +1291,7 @@
       zoom: Number.isFinite(zoom) ? zoom : null,
       base: base === "air" ? "air" : "map",
       hereLat: Number.isFinite(hereLat) ? hereLat : null,
-      hereLon: Number.isFinite(hereLon) ? hereLon : null,
-      nlogOperatorFilter: nlog === "nam" ? "nam" : "all",
-      nlogShowFields: fields !== "0",
-      nlogShowFacilities: facilities === "1",
-      broGt: broGt === "1",
-      broSoil: broSoil === "1"
+      hereLon: Number.isFinite(hereLon) ? hereLon : null
     };
   }
 
@@ -1317,12 +1303,6 @@
     params.set("lon", center.lng.toFixed(5));
     params.set("z", String(map.getZoom()));
     params.set("base", state.permalinkBase);
-
-    if (state.nlogOperatorFilter === "nam") params.set("nlog", "nam");
-    if (!state.nlogShowFields) params.set("fields", "0");
-    if (state.nlogShowFacilities) params.set("facilities", "1");
-    if (state.permalinkBroGt) params.set("broGt", "1");
-    if (state.permalinkBroSoil) params.set("broSoil", "1");
 
     if (state.permalinkWhatIsHere) {
       params.set("hereLat", state.permalinkWhatIsHere.lat.toFixed(5));
@@ -1343,11 +1323,6 @@
     var startZoom = permalink.zoom !== null ? permalink.zoom : 8;
 
     state.permalinkBase = permalink.base;
-    state.nlogOperatorFilter = permalink.nlogOperatorFilter;
-    state.nlogShowFields = permalink.nlogShowFields;
-    state.nlogShowFacilities = permalink.nlogShowFacilities;
-    state.permalinkBroGt = permalink.broGt;
-    state.permalinkBroSoil = permalink.broSoil;
     if (permalink.hereLat !== null && permalink.hereLon !== null) {
       state.permalinkWhatIsHere = {
         lat: permalink.hereLat,
@@ -1394,9 +1369,6 @@
       }
     );
 
-    if (state.permalinkBroGt) broGrondwaterLayer.addTo(map);
-    if (state.permalinkBroSoil) broBodemkaartLayer.addTo(map);
-
     if (state.permalinkBase === "air") {
       pdokLuchtfotoLayer.addTo(map);
     } else {
@@ -1422,18 +1394,6 @@
 
     map.on("baselayerchange", function (e) {
       state.permalinkBase = e.layer === pdokLuchtfotoLayer ? "air" : "map";
-      updatePermalinkHash();
-    });
-
-    map.on("overlayadd", function (e) {
-      if (e.layer === broGrondwaterLayer) state.permalinkBroGt = true;
-      if (e.layer === broBodemkaartLayer) state.permalinkBroSoil = true;
-      updatePermalinkHash();
-    });
-
-    map.on("overlayremove", function (e) {
-      if (e.layer === broGrondwaterLayer) state.permalinkBroGt = false;
-      if (e.layer === broBodemkaartLayer) state.permalinkBroSoil = false;
       updatePermalinkHash();
     });
 
