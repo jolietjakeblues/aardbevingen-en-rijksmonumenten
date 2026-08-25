@@ -1,4 +1,4 @@
-﻿<img src="docs/logo.svg" alt="Logo: huisje en schop op een seismogram-golflijn" width="72" height="72">
+<img src="docs/logo.svg" alt="Logo: huisje en schop op een seismogram-golflijn" width="72" height="72">
 
 # Aardbevingen NL - epicentrum & rijksmonumenten
 
@@ -40,11 +40,6 @@ kaart).
   (56)") filteren de kaart en de CSV-export tot alleen die categorie, volledig client-side.
 - Laatst geregistreerde beving: een regel bovenaan de zijbalk toont direct de meest recente
   beving uit de volledige dataset, als indicatie van hoe actueel de live KNMI-data is.
-- NLOG mijnbouwlagen: toont olie-, gas-, geothermie- en opslagvelden plus mijnbouwlocaties,
-  met operatorfilter voor alle operators of alleen NAM. Velden staan standaard aan;
-  mijnbouwlocaties zijn optioneel.
-- Alternatieve ondergrond: schakel tussen de lichte CARTO-kaart en de actuele RGB-luchtfoto
-  van PDOK / Beeldmateriaal.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
 - Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
   plaats van dat de hele pagina faalt.
@@ -58,8 +53,6 @@ opgehaald. De applicatie bevat geen ingebouwde momentopname van deze datasets.
 
 - **Aardbevingen:** KNMI, rechtstreeks via `rdsa.knmi.nl` (CSV).
 - **Rijksmonumenten:** RCE Cultureel Erfgoed Linked Open Data, via het CHO SPARQL-endpoint (CEO-ontologie).
-- **Mijnbouwvelden en mijnbouwlocaties:** NLOG / Geologische Dienst Nederland, via de publieke WFS-service.
-- **Luchtfoto:** PDOK / Beeldmateriaal, via de actuele RGB-luchtfoto WMS.
 
 Waarom rechtstreeks het KNMI, welke bronnen zijn afgewogen, en hoe de rijksmonumenten-query werkt:
 zie [documentation/DATA.md](documentation/DATA.md).
@@ -105,8 +98,6 @@ IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
 - Het KNMI voor de openbare aardbevingsgegevens.
 - De Rijksdienst voor het Cultureel Erfgoed voor de linked data over rijksmonumenten en de
   Cultureel Erfgoed Ontologie.
-- NLOG / Geologische Dienst Nederland voor de openbare mijnbouwgegevens.
-- PDOK / Beeldmateriaal voor de actuele RGB-luchtfoto.
 - Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over effectgebieden.
 - Leaflet en CARTO voor de kaartweergave.
 
