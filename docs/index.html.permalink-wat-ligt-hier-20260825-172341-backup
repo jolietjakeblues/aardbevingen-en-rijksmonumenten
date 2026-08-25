@@ -408,8 +408,7 @@
     nlogShowFields: true,
     nlogShowFacilities: false,
     whatIsHereArmed: false,
-    permalinkBase: "map",
-    permalinkWhatIsHere: null
+    permalinkBase: "map"
   };
   var timePlayTimer = null;
 
@@ -618,12 +617,7 @@
       btn.textContent = "Kies locatie op kaart";
       map.getContainer().style.cursor = "";
 
-      state.permalinkWhatIsHere = {
-        lat: e.latlng.lat,
-        lon: e.latlng.lng
-      };
       showWhatIsHere(e.latlng.lat, e.latlng.lng);
-      updatePermalinkHash();
     });
   }
 
@@ -1282,16 +1276,12 @@
     var lon = parseFloat(params.get("lon"));
     var zoom = parseInt(params.get("z"), 10);
     var base = params.get("base");
-    var hereLat = parseFloat(params.get("hereLat"));
-    var hereLon = parseFloat(params.get("hereLon"));
 
     return {
       lat: Number.isFinite(lat) ? lat : null,
       lon: Number.isFinite(lon) ? lon : null,
       zoom: Number.isFinite(zoom) ? zoom : null,
-      base: base === "air" ? "air" : "map",
-      hereLat: Number.isFinite(hereLat) ? hereLat : null,
-      hereLon: Number.isFinite(hereLon) ? hereLon : null
+      base: base === "air" ? "air" : "map"
     };
   }
 
@@ -1303,11 +1293,6 @@
     params.set("lon", center.lng.toFixed(5));
     params.set("z", String(map.getZoom()));
     params.set("base", state.permalinkBase);
-
-    if (state.permalinkWhatIsHere) {
-      params.set("hereLat", state.permalinkWhatIsHere.lat.toFixed(5));
-      params.set("hereLon", state.permalinkWhatIsHere.lon.toFixed(5));
-    }
 
     var nextHash = "#" + params.toString();
     if (window.location.hash !== nextHash) {
@@ -1323,12 +1308,6 @@
     var startZoom = permalink.zoom !== null ? permalink.zoom : 8;
 
     state.permalinkBase = permalink.base;
-    if (permalink.hereLat !== null && permalink.hereLon !== null) {
-      state.permalinkWhatIsHere = {
-        lat: permalink.hereLat,
-        lon: permalink.hereLon
-      };
-    }
     map = L.map("map", { center: startCenter, zoom: startZoom });
     var cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
@@ -2229,13 +2208,6 @@
   initDownloadCsv();
   initNlogControls();
   initWhatIsHere();
-  if (state.permalinkWhatIsHere) {
-    showWhatIsHere(
-      state.permalinkWhatIsHere.lat,
-      state.permalinkWhatIsHere.lon
-    );
-  }
-  updatePermalinkHash();
   loadNlogLayers();
   loadEarthquakes();
 })();
