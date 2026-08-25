@@ -1086,33 +1086,10 @@
   }
   function initMap() {
     map = L.map("map", { center: [52.2, 5.3], zoom: 8 });
-    var cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(map);
-
-    var pdokLuchtfotoLayer = L.tileLayer.wms(
-      "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0",
-      {
-        layers: "Actueel_ortho25",
-        format: "image/jpeg",
-        transparent: false,
-        version: "1.3.0",
-        attribution: "PDOK / Beeldmateriaal"
-      }
-    );
-
-    L.control.layers(
-      {
-        "Kaart": cartoLayer,
-        "Luchtfoto": pdokLuchtfotoLayer
-      },
-      null,
-      {
-        position: "topright",
-        collapsed: true
-      }
-    ).addTo(map);
 
     nlogFieldLayer = L.geoJSON(null, {
       style: styleNlogField,
