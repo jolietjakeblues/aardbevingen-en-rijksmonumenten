@@ -34,7 +34,7 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
 - **Alle aardbevingen blijven zichtbaar** op de kaart, ook nadat je een epicentrum hebt
   geselecteerd - dat kan rommelig ogen bij een dichte cluster. Opgelost sinds v0.19.2: de
   NIET-geselecteerde bevingen faden zodra er een epicentrum actief is.
-- De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, CARTO en unpkg; bij
+- De applicatie blijft afhankelijk van de beschikbaarheid van KNMI, RCE, PDOK, OpenStreetMap en unpkg; bij
   timeout (20s) of falen van één bron toont de pagina sinds v0.16.0 de andere bron nog wel
   (`Promise.allSettled`), met een statusmelding welk deel ontbreekt.
 - **Cross-browser: gedaan.** Chrome, Firefox en Safari getest door meerdere gebruikers - alles werkt.

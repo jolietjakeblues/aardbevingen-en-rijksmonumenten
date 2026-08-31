@@ -295,7 +295,7 @@
     <footer>
       Aardbevingen: <a href="https://rdsa.knmi.nl/abcws/event/query?eventtype=induced&format=csv" target="_blank" rel="noopener">KNMI</a> ·
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
-      Kaart: Leaflet + CARTO. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
+      Kaart: Leaflet met PDOK BRT, OpenStreetMap en PDOK-luchtfoto. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
       Applicatieversie 0.20.5<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
@@ -1315,7 +1315,7 @@
       lat: Number.isFinite(lat) ? lat : null,
       lon: Number.isFinite(lon) ? lon : null,
       zoom: Number.isFinite(zoom) ? zoom : null,
-      base: base === "air" ? "air" : "map",
+      base: base === "air" ? "air" : (base === "osm" ? "osm" : "brt"),
       hereLat: Number.isFinite(hereLat) ? hereLat : null,
       hereLon: Number.isFinite(hereLon) ? hereLon : null,
       nlogOperatorFilter: nlog === "nam" ? "nam" : "all",
@@ -1382,8 +1382,16 @@
       };
     }
     map = L.map("map", { center: startCenter, zoom: startZoom });
-    var cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
+    var pdokBrtLayer = L.tileLayer(
+      "https://service.pdok.nl/kadaster/brt-achtergrondkaart/wmts/v2_0/pastel/EPSG:3857/{z}/{x}/{y}.png",
+      {
+        attribution: '&copy; <a href="https://www.pdok.nl/">PDOK</a> / Kadaster, BRT Achtergrondkaart',
+        maxZoom: 19
+      }
+    );
+
+    var openStreetMapLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers',
       maxZoom: 19
     });
 
@@ -1426,14 +1434,17 @@
 
     if (state.permalinkBase === "air") {
       pdokLuchtfotoLayer.addTo(map);
+    } else if (state.permalinkBase === "osm") {
+      openStreetMapLayer.addTo(map);
     } else {
-      cartoLayer.addTo(map);
+      pdokBrtLayer.addTo(map);
     }
 
     L.control.layers(
       {
-        "Kaart": cartoLayer,
-        "Luchtfoto": pdokLuchtfotoLayer
+        "PDOK BRT Pastel": pdokBrtLayer,
+        "OpenStreetMap": openStreetMapLayer,
+        "PDOK Luchtfoto": pdokLuchtfotoLayer
       },
       {
         "BRO Grondwaterspiegeldiepte (Gt)": broGrondwaterLayer,
@@ -1448,7 +1459,13 @@
     map.on("moveend", updatePermalinkHash);
 
     map.on("baselayerchange", function (e) {
-      state.permalinkBase = e.layer === pdokLuchtfotoLayer ? "air" : "map";
+      if (e.layer === pdokLuchtfotoLayer) {
+        state.permalinkBase = "air";
+      } else if (e.layer === openStreetMapLayer) {
+        state.permalinkBase = "osm";
+      } else {
+        state.permalinkBase = "brt";
+      }
       updatePermalinkHash();
     });
 

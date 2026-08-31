@@ -43,8 +43,8 @@ kaart).
 - NLOG mijnbouwlagen: toont olie-, gas-, geothermie- en opslagvelden plus mijnbouwlocaties,
   met operatorfilter voor alle operators of alleen NAM. Velden staan standaard aan;
   mijnbouwlocaties zijn optioneel.
-- Alternatieve ondergrond: schakel tussen de lichte CARTO-kaart en de actuele RGB-luchtfoto
-  van PDOK / Beeldmateriaal.
+- Achtergrondkaarten: schakel tussen PDOK BRT Pastel, OpenStreetMap en de actuele
+  RGB-luchtfoto van PDOK / Beeldmateriaal.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.
 - Robuuste dataverzoeken: timeouts en gedeeltelijke resultaten bij het uitvallen van één bron, in
   plaats van dat de hele pagina faalt.
@@ -108,7 +108,7 @@ IMG/schadedoormijnbouw.nl voordat je afgeleide claims publiceert.
 - NLOG / Geologische Dienst Nederland voor de openbare mijnbouwgegevens.
 - PDOK / Beeldmateriaal voor de actuele RGB-luchtfoto.
 - Het Instituut Mijnbouwschade Groningen voor de gepubliceerde gegevens over effectgebieden.
-- Leaflet en CARTO voor de kaartweergave.
+- Leaflet, PDOK en OpenStreetMap voor de kaartweergave.
 
 ---
 
