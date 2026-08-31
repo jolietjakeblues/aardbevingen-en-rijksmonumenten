@@ -11,7 +11,8 @@ de pagina en bij elke interactie wordt er in de browser (`fetch()`) rechtstreeks
 | Aardbevingen (alle ~3.750, 1911-heden) | eenmalig bij laden van de pagina | **KNMI**, rechtstreeks (`rdsa.knmi.nl`, CSV) |
 | Rijksmonumenten binnen straal | bij elke selectie/straal-wijziging (gedebounced, 350ms) | RCE CHO linked data, live SPARQL |
 | NLOG mijnbouwvelden en mijnbouwlocaties | eenmalig bij laden van de pagina | NLOG / Geologische Dienst Nederland, live WFS |
-| CARTO-kaarttegels | doorlopend tijdens pannen/zoomen | CARTO (extern, CDN) |
+| PDOK BRT-kaarttegels | doorlopend tijdens pannen/zoomen | PDOK / Kadaster, live WMTS |
+| OpenStreetMap-kaarttegels | alleen wanneer deze ondergrond actief is | OpenStreetMap |
 | PDOK-luchtfoto | alleen wanneer deze ondergrond actief is, tijdens pannen/zoomen | PDOK / Beeldmateriaal, live WMS |
 | Leaflet-library | eenmalig bij laden | unpkg CDN |
 
@@ -78,11 +79,13 @@ De gebruiker kan client-side filteren op alle operators of alleen NAM. De data w
 repository opgeslagen. Bij het laden vraagt de applicatie eerst de beschikbare WFS-laagnamen op
 via `GetCapabilities`; daarna wordt GeoJSON opgehaald via WFS 2.0.0, met WFS 1.1.0 als fallback.
 
-## PDOK-luchtfoto
+## Achtergrondkaarten
 
-Naast de standaard lichte CARTO-ondergrond kan de gebruiker overschakelen naar de actuele
-RGB-luchtfoto van PDOK / Beeldmateriaal. De luchtfoto wordt als WMS-laag geladen en is alleen
-actief wanneer de gebruiker deze ondergrond kiest. CARTO blijft de standaardondergrond.
+De standaardondergrond is PDOK BRT Achtergrondkaart in het thema pastel, geladen via WMTS in
+EPSG:3857. De gebruiker kan overschakelen naar OpenStreetMap voor dekking buiten Nederland of
+naar de actuele RGB-luchtfoto van PDOK / Beeldmateriaal. De luchtfoto wordt als WMS-laag geladen.
+Elke externe aanvraag wordt pas actief wanneer de gebruiker die basislaag kiest. Geen van deze
+basislagen vereist een API-key.
 ## Rijksmonumenten: filtering en dataqualiteit
 
 - **Alleen geldige rijksmonumenten**: gefilterd op juridische status = "rijksmonument" (dus niet

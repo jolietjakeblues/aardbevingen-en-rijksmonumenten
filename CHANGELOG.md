@@ -4,6 +4,15 @@ Alle wijzigingen zijn ontwikkeld in één sessie (juli 2026), als opeenvolgende 
 eerdere, verloren gegane versie die aardbevingen nog als ingebakken snapshot toonde. Achtergrond
 en technische details per onderwerp: zie `documentation/`.
 
+## Niet vrijgegeven
+
+- CARTO verwijderd nadat CARTO een API-key verplicht stelde voor rasterbasemaps.
+- PDOK BRT Pastel toegevoegd als standaardachtergrondkaart.
+- OpenStreetMap toegevoegd als tweede basiskaart voor dekking buiten Nederland.
+- De bestaande PDOK-luchtfoto blijft beschikbaar.
+- Permalinks ondersteunen `base=brt`, `base=osm` en `base=air`. Oudere `base=map`-links
+  vallen terug op PDOK BRT.
+
 ## v0.20.5 - laatst geregistreerde beving
 
 Nieuwe regel bovenaan de zijbalk (onder de subtitel): "Laatst geregistreerde beving: [datum] ·
