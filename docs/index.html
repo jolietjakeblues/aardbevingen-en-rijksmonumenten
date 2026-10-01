@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aardbevingen NL - epicentrum &amp; rijksmonumenten</title>
+<meta name="description" content="Interactieve kaart van Nederlandse aardbevingen: selecteer een epicentrum en een straal, en bekijk welke rijksmonumenten binnen dat gebied liggen, inclusief een verkennende impactindicatie per monument.">
+<link rel="canonical" href="https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<meta property="og:title" content="Aardbevingen NL - epicentrum &amp; rijksmonumenten">
+<meta property="og:description" content="Interactieve kaart van Nederlandse aardbevingen: selecteer een epicentrum en een straal, en bekijk welke rijksmonumenten binnen dat gebied liggen.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/">
+<meta property="og:image" content="https://jolietjakeblues.github.io/aardbevingen-en-rijksmonumenten/logo.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Aardbevingen NL - epicentrum &amp; rijksmonumenten">
+<meta name="twitter:description" content="Interactieve kaart van Nederlandse aardbevingen en rijksmonumenten binnen een gekozen straal.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root{
@@ -297,7 +308,7 @@
       Rijksmonumenten: <a href="https://linkeddata.cultureelerfgoed.nl/def/ceo" target="_blank" rel="noopener">CEO / RCE CHO</a><br>
       Kaart: Leaflet met PDOK BRT, OpenStreetMap en PDOK-luchtfoto. Beide databronnen worden rechtstreeks bevraagd. De applicatie gebruikt geen ingebouwde momentopname.<br>
       <a href="achtergrond.html">Achtergrond: waarom aardbevingen en rijksmonumenten?</a><br>
-      Applicatieversie 0.20.5<br>
+      Applicatieversie 0.8<br>
       <span class="disclaimer">Onafhankelijk initiatief. Niet ontwikkeld in opdracht van KNMI of RCE. Aan deze kaart en de bijbehorende teksten kunnen geen rechten of plichten worden ontleend.</span>
     </footer>
   </div>
@@ -1120,9 +1131,6 @@
       )
     };
 
-    console.info("NLOG beschikbare FeatureTypes:", names);
-    console.info("NLOG gekozen laagnamen:", nlogResolvedTypeNames);
-
     return nlogResolvedTypeNames;
   }
 
@@ -1155,7 +1163,6 @@
 
       try {
         var url = buildNlogWfsUrl(typeName, version);
-        console.info("NLOG ophalen:", url);
 
         var res = await fetchWithTimeout(
           url,
@@ -1186,23 +1193,9 @@
           throw new Error("onverwacht GeoJSON-formaat via WFS " + version);
         }
 
-        console.info(
-          "NLOG laag geladen:",
-          typeName,
-          json.features.length,
-          "features via WFS",
-          version
-        );
-
         return json;
       } catch (err) {
         lastError = err;
-        console.warn(
-          "NLOG poging mislukt:",
-          typeName,
-          "WFS " + version,
-          err
-        );
       }
     }
 
@@ -1218,11 +1211,6 @@
     try {
       typeNames = await resolveNlogTypeNames();
     } catch (err) {
-      console.warn(
-        "GetCapabilities kon niet worden gelezen; bekende laagnamen worden geprobeerd:",
-        err
-      );
-
       typeNames = {
         field: NLOG_FIELD_TYPENAME,
         facility: NLOG_FACILITY_TYPENAME
@@ -1257,7 +1245,6 @@
           ? results[0].reason.message
           : String(results[0].reason || "onbekende fout");
 
-      console.error("NLOG-velden konden niet worden geladen:", results[0].reason);
       errors.push("velden: " + fieldMsg);
     }
 
@@ -1266,11 +1253,6 @@
         results[1].reason && results[1].reason.message
           ? results[1].reason.message
           : String(results[1].reason || "onbekende fout");
-
-      console.error(
-        "NLOG-mijnbouwlocaties konden niet worden geladen:",
-        results[1].reason
-      );
 
       errors.push("mijnbouwlocaties: " + facilityMsg);
     }
