@@ -7,11 +7,15 @@ en technische details per onderwerp: zie `documentation/`.
 ## Niet vrijgegeven
 
 - CARTO verwijderd nadat CARTO een API-key verplicht stelde voor rasterbasemaps.
-- PDOK BRT Pastel toegevoegd als standaardachtergrondkaart.
-- OpenStreetMap toegevoegd als tweede basiskaart voor dekking buiten Nederland.
-- De bestaande PDOK-luchtfoto blijft beschikbaar.
-- Permalinks ondersteunen `base=brt`, `base=osm` en `base=air`. Oudere `base=map`-links
-  vallen terug op PDOK BRT.
+- PDOK BRT Pastel en OpenStreetMap toegevoegd als basiskaarten, naast de bestaande PDOK-luchtfoto.
+- OpenStreetMap is de standaardachtergrondkaart: PDOK BRT Pastel dekt alleen Nederland en toont
+  een lege grijze kaart buiten de grens, waardoor bijvoorbeeld Duitse aardbevingen zonder
+  geografische context stonden. OpenStreetMap dekt heel Europa.
+- De OSM-laag krijgt een gedempt CSS-filter (lagere verzadiging/contrast) om de standaard
+  drukke POI-iconen en felle kleuren wat rustiger te maken, zonder een alternatieve tile-bron
+  (en dus een nieuwe API-key-afhankelijkheid) te introduceren.
+- Permalinks ondersteunen `base=brt`, `base=osm` en `base=air`. Oudere `base=map`-links en links
+  zonder `base`-parameter vallen terug op OpenStreetMap.
 
 ## v0.20.5 - laatst geregistreerde beving
 
