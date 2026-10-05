@@ -76,6 +76,7 @@
   }
   .legend-control-header:focus-visible { outline: 2px solid #1a5276; outline-offset: 2px; }
   .legend-control-body { padding: 0 10px 10px; }
+  #eqLoadStatus { margin-bottom: 14px; }
   .reset-control { background: #fff; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,.4); }
   .reset-control-btn {
     display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;
@@ -198,6 +199,7 @@
     </div>
     <div class="subtitle">Epicentrum selecteren, straal instellen, rijksmonumenten binnen bereik zien. Aardbevingen rechtstreeks van het KNMI, rijksmonumenten via linked data van de RCE.</div>
     <div id="latestEqInfo" class="hint" aria-live="polite"></div>
+    <div id="eqLoadStatus" class="hint" aria-live="polite"></div>
     <div id="helpBody" class="help-body" style="display:none">
       <ol>
         <li>Selecteer een aardbeving op de kaart, of zoek op plaatsnaam.</li>
@@ -1477,7 +1479,13 @@
       updatePermalinkHash();
     });
 
+    // NLOG-velden in een eigen pane onder overlayPane (400, waar de aardbevingen en straalcirkel
+    // in tekenen). Anders bepaalt de laadvolgorde de stapeling: komt NLOG later binnen dan KNMI, of
+    // wordt de laag herbouwd bij een filterwijziging, dan liggen de velden boven de bevingen en
+    // vangen ze alle klikken/tooltips op (de geïnduceerde bevingen liggen bijna allemaal in een veld).
+    map.createPane("nlogFieldsPane").style.zIndex = 350;
     nlogFieldLayer = L.geoJSON(null, {
+      pane: "nlogFieldsPane",
       style: styleNlogField,
       onEachFeature: bindNlogFieldPopup
     }).addTo(map);
@@ -1517,43 +1525,92 @@
       (latest.place ? " bij " + latest.place : "");
   }
 
-  async function loadEarthquakes() {
-    $("eqStats").innerHTML = loadingHtml("Aardbevingen laden…");
-    try {
-      var results = await Promise.allSettled([
-        fetchKnmiCsv(KNMI_INDUCED_URL),
-        fetchKnmiCsv(KNMI_TECTONIC_URL)
-      ]);
-      var events = [];
-      var warnings = [];
+  // Elke KNMI-bron wordt los geladen en getoond zodra hij binnen is. Het geïnduceerde endpoint kan
+  // bij een koude servercache ~17 s duren (gemeten), het tektonische is meestal binnen een paar
+  // seconden klaar: wachten op beide liet de kaart eerst lang leeg en maakte een mislukte bron
+  // alleen via een handmatige harde refresh te herstellen.
+  var EQ_SOURCES = [
+    { key: "induced", url: KNMI_INDUCED_URL, category: "geïnduceerde aardbevingen", label: "Geïnduceerde aardbevingen" },
+    { key: "tectonic", url: KNMI_TECTONIC_URL, category: "tektonische aardbevingen", label: "Tektonische aardbevingen" }
+  ];
+  var eqLoaded = { induced: [], tectonic: [] };
+  var eqStatus = { induced: "pending", tectonic: "pending" }; // pending | done | failed
 
-      if (results[0].status === "fulfilled") {
-        events = events.concat(parseKnmiCsv(results[0].value, "geïnduceerde aardbevingen"));
-      } else {
-        warnings.push("geïnduceerde aardbevingen");
-      }
-      if (results[1].status === "fulfilled") {
-        events = events.concat(parseKnmiCsv(results[1].value, "tektonische aardbevingen"));
-      } else {
-        warnings.push("tektonische aardbevingen");
-      }
-      if (!events.length) throw new Error("Geen van beide KNMI-bronnen kon worden geladen");
+  function eqLabelsWithStatus(status) {
+    return EQ_SOURCES.filter(function (s) { return eqStatus[s.key] === status; })
+      .map(function (s) { return s.label.toLowerCase(); });
+  }
 
-      state.events = events;
-      renderLatestEqInfo(state.events);
-      var years = state.events.map(function (e) { return yearOf(e.date); }).filter(function (y) { return y !== null; });
-      state.minYear = years.length ? Math.min.apply(null, years) : null;
-      state.maxYear = years.length ? Math.max.apply(null, years) : null;
-      initTimeSlider();
-      renderEarthquakeMarkers();
-      populatePlaceList();
+  function eqIncompleteNoteHtml() {
+    var missing = eqLabelsWithStatus("pending").concat(eqLabelsWithStatus("failed"));
+    if (!missing.length) return "";
+    return '<div class="hint" style="margin-top:6px;">Let op: ' + escapeHtml(missing.join(" en ")) +
+      ' nog niet geladen - deze telling is onvolledig.</div>';
+  }
 
-      var status = 'Selecteer een epicentrum om statistieken te zien.';
-      if (warnings.length) status += ' Let op: niet geladen: ' + warnings.join(" en ") + '.';
-      $("eqStats").innerHTML = '<span class="placeholder">' + escapeHtml(status) + '</span>';
-    } catch (err) {
-      $("eqStats").innerHTML = '<span class="error-msg" role="alert">Kon aardbevingsdata niet laden: ' + escapeHtml(err.message) + '</span>';
+  function renderEqLoadStatus() {
+    var pending = eqLabelsWithStatus("pending");
+    var failed = eqLabelsWithStatus("failed");
+    var html = "";
+    if (pending.length) {
+      html += loadingHtml("Laden: " + pending.join(" en ") + " (bij een trage KNMI-server tot ~20 s)…");
     }
+    if (failed.length) {
+      html += (html ? "<br>" : "") + '<span class="error-msg" role="alert">Niet geladen: ' +
+        escapeHtml(failed.join(" en ")) + '.</span> ' +
+        '<button type="button" class="help-toggle" id="eqRetryBtn">Opnieuw proberen</button>';
+    }
+    $("eqLoadStatus").innerHTML = html;
+  }
+
+  function applyLoadedEarthquakes() {
+    var events = [];
+    EQ_SOURCES.forEach(function (s) { events = events.concat(eqLoaded[s.key]); });
+    state.events = events;
+    renderLatestEqInfo(events);
+    var years = events.map(function (e) { return yearOf(e.date); }).filter(function (y) { return y !== null; });
+    var minYear = years.length ? Math.min.apply(null, years) : null;
+    var maxYear = years.length ? Math.max.apply(null, years) : null;
+    // De tijdslider alleen (her)initialiseren als het jarenbereik echt verandert; anders zou een
+    // late tweede bron een door de gebruiker al gekozen tijdvenster terugzetten.
+    if (minYear !== state.minYear || maxYear !== state.maxYear) {
+      state.minYear = minYear;
+      state.maxYear = maxYear;
+      initTimeSlider();
+    }
+    renderEarthquakeMarkers();
+    populatePlaceList();
+    if (state.selected) {
+      renderEqStats();
+    } else {
+      $("eqStats").innerHTML = '<span class="placeholder">Selecteer een epicentrum om statistieken te zien.</span>';
+    }
+  }
+
+  async function loadEarthquakeSource(src) {
+    eqStatus[src.key] = "pending";
+    renderEqLoadStatus();
+    try {
+      eqLoaded[src.key] = parseKnmiCsv(await fetchKnmiCsv(src.url), src.category);
+      eqStatus[src.key] = "done";
+      applyLoadedEarthquakes();
+    } catch (err) {
+      eqStatus[src.key] = "failed";
+      if (state.selected) renderEqStats();
+    }
+    renderEqLoadStatus();
+    if (eqStatus.induced === "failed" && eqStatus.tectonic === "failed") {
+      $("eqStats").innerHTML = '<span class="error-msg" role="alert">Kon aardbevingsdata niet laden: geen van beide KNMI-bronnen kon worden geladen.</span>';
+    }
+  }
+
+  function loadEarthquakes() {
+    $("eqStats").innerHTML = loadingHtml("Aardbevingen laden…");
+    $("eqLoadStatus").addEventListener("click", function (e) {
+      if (!e.target || e.target.id !== "eqRetryBtn") return;
+      EQ_SOURCES.forEach(function (s) { if (eqStatus[s.key] === "failed") loadEarthquakeSource(s); });
+    });
+    return Promise.all(EQ_SOURCES.map(loadEarthquakeSource));
   }
 
   function addEarthquakeMarker(ev, fillOpacity, strokeOpacity) {
@@ -1682,7 +1739,7 @@
       return haversineKm(lat, lon, ev.lat, ev.lon) <= r;
     });
     if (inRange.length === 0) {
-      $("eqStats").innerHTML = '<span class="placeholder">Geen aardbevingen binnen ' + r + ' km.</span>';
+      $("eqStats").innerHTML = '<span class="placeholder">Geen aardbevingen binnen ' + r + ' km.</span>' + eqIncompleteNoteHtml();
       return;
     }
     var mags = inRange.filter(function (e) { return e.mag !== null; }).map(function (e) { return e.mag; });
@@ -1706,7 +1763,7 @@
         escapeHtml(k) + ': ' + perCat[k] + '</div>';
     }).join("") + '</div>';
 
-    $("eqStats").innerHTML = rows;
+    $("eqStats").innerHTML = rows + eqIncompleteNoteHtml();
   }
 
   var monDebounceTimer = null;

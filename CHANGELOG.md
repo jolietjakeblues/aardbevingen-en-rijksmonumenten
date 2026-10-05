@@ -18,6 +18,17 @@ en technische details per onderwerp: zie `documentation/`.
   monumenten, zoekresultaten (plaats, rijksmonumentnummer, "Wat ligt hier?") en zoomt terug naar
   heel Nederland. Aardbevingen, tijdslider, straal, achtergrondkaart en NLOG/BRO-lagen blijven
   staan; een nog lopende monumenten-query wordt geannuleerd.
+- Aardbevingen laden nu per bron (tektonisch en geïnduceerd apart) en verschijnen zodra ze binnen
+  zijn, met een zichtbare laadmelding. Het KNMI-endpoint voor geïnduceerde bevingen doet er bij een
+  koude servercache ~17 s over (opnieuw gemeten); eerder bleef de kaart zolang leeg en moest een
+  mislukte bron met een harde refresh (Ctrl+Shift+R) worden hersteld. Nu staat er bij falen een
+  "Opnieuw proberen"-knop, en een epicentrum-telling meldt zolang een bron ontbreekt dat hij
+  onvolledig is.
+- Witregel tussen "Laatst geregistreerde beving" en "Zoek op plaats".
+- Fix: NLOG-velden liggen nu in een eigen laag (pane) onder de aardbevingen. Eerder bepaalde de
+  laadvolgorde de stapeling: laadde NLOG na het KNMI, of werd de laag herbouwd door de
+  operatorfilter, dan lagen de velden boven de bevingen. In Groningen werd zo ~88% van de
+  geïnduceerde bevingen afgedekt (klik, tooltip en selectie gingen naar het NLOG-veld).
 - Permalinks ondersteunen `base=brt`, `base=osm` en `base=air`. Oudere `base=map`-links en links
   zonder `base`-parameter vallen terug op OpenStreetMap.
 
