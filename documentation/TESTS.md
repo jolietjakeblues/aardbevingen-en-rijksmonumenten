@@ -143,7 +143,16 @@ licht verschuiven als de brondata verandert.
 | 15.6 | Kies met een actief filter een nieuw, ander epicentrum | Filter wordt automatisch gewist (paneel toont weer de volledige, nieuwe telling zonder actieve chip) |
 | 15.7 | Activeer een functie-filter, wijzig daarna de straal zodanig dat die functie niet meer voorkomt in de nieuwe straal | Filter wordt automatisch opgeheven i.p.v. een lege kaart zonder wis-mogelijkheid te tonen |
 
-## 16. Robuustheid bij falende bronnen
+## 16. Opnieuw beginnen (reset)
+
+| # | Stap | Verwacht resultaat |
+|---|---|---|
+| 16.1 | Zoek op "Loppersum", zoek ook rijksmonument nr. 26265 en klik "Wat ligt hier?" met een punt op de kaart. Klik dan het reset-icoon (cirkelpijl, op de kaart onder de zoomknoppen; tooltip "Opnieuw beginnen") | Straalcirkel, alle monument-markers, de popup en de "Wat ligt hier?"-resultaten verdwijnen; plaatszoekveld, nummerzoekveld, statistieken en het filterpaneel zijn leeg/verborgen; "Geselecteerd epicentrum" toont weer de drie stappen; kaart zoomt terug naar heel Nederland (hash: `lat=52.2&lon=5.3&z=8`, zonder `hereLat`/`hereLon`) |
+| 16.2 | Controleer na de reset de rest | Alle aardbevingen staan er nog en zijn weer op volle sterkte (niet meer gefade); straal, tijdslider, achtergrondkaart en NLOG/BRO-lagen zijn ongewijzigd |
+| 16.3 | Selecteer een epicentrum en klik binnen 350 ms (vóór de monumenten geladen zijn) op reset | Er verschijnen daarna geen monumenten alsnog op de kaart |
+| 16.4 | Klik "Wat ligt hier?" (cursor wordt een kruisje) en klik dan reset | Cursor is weer normaal en een volgende klik op de kaart doet niets |
+
+## 17. Robuustheid bij falende bronnen
 
 | # | Stap | Verwacht resultaat |
 |---|---|---|
