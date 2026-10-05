@@ -56,6 +56,19 @@ Getest (juli 2026) met de responsive-resize-tool van de browser:
   rood loopt op naar 78 (deuteranopie) en 115 (protanopie). Rood en oranje bleven in alle gevallen
   goed te onderscheiden, dus alleen groen is aangepast.
 
+- **PDOK BRT Pastel (de toenmalige standaardkaart) dekt alleen Nederland - opgelost (nog niet
+  vrijgegeven).** Gemeld door een gebruiker: aardbevingen net over de grens (bv. bij Eschweiler,
+  Duitsland) stonden op een vrijwel lege grijze kaart, zonder wegen/plaatsnamen als context. Live
+  bevestigd met een vergelijking op dezelfde locatie (lat 50,80 / lon 6,10, z8): BRT toont alleen
+  een klein NL-randje, de rest grijs; OpenStreetMap toont de volle dekking tot in Duitsland/België/
+  Luxemburg. Fix: OpenStreetMap is nu de standaardkaart (ook bij permalinks zonder `base`-parameter
+  of met het oude `base=map`); BRT en de luchtfoto blijven kiesbaar. Om de standaard OSM-stijl (fel
+  gekleurd, veel POI-iconen) rustiger te maken zonder een nieuwe tile-bron/API-key-afhankelijkheid
+  te introduceren, kreeg de OSM-laag een CSS-filter (`saturate(55%) contrast(0.92) brightness(1.04)`,
+  via Leaflet's `className`-optie). Live geverifieerd op een drukke binnenstad (Amersfoort): kleuren
+  merkbaar gedempt, iconen blijven leesbaar. Expliciete `base=brt`/`base=air`-permalinks blijven
+  ongewijzigd werken.
+
 Zie ook [DATA.md](DATA.md) voor de dataspecifieke beperkingen (query-limieten, veldvulling).
 
 ## Roadmap naar v0.20.0 (eerste officiële release) - AFGEROND
@@ -130,6 +143,15 @@ Gevonden bij hands-on gebruik na v0.19.3, gefixt vóór het taggen van v0.20.0:
   `.loading`-tekst overal: aardbevingen laden, rijksmonumenten binnen straal, nummer-opzoeking.
 
 ## Mogelijke uitbreidingen (later)
+
+- ~~Reset-/wisknop om de kaart weer schoon te maken~~ - **gedaan (nog niet vrijgegeven)**: knop
+  een icoon-only reset-knop (cirkelpijl, met tooltip en `aria-label` "Opnieuw beginnen") als
+  Leaflet-control onder de zoomknoppen (bewust op de kaart, niet in de
+  lange zijbalk, zodat hij ook op mobiel altijd bereikbaar is). `resetAll()` wist selectie,
+  straalcirkel, monumenten, filter en zoekresultaten, annuleert een lopende monumenten-query
+  (`monFetchToken` ophogen + debounce-timer wissen) en zoomt terug naar de startweergave
+  (`DEFAULT_CENTER`/`DEFAULT_ZOOM`). Bewust ongemoeid: aardbevingen, tijdslider, straal,
+  achtergrondkaart en NLOG/BRO-lagen. Testchecklist: sectie 16.
 
 - ~~Laatst geregistreerde beving zichtbaar maken~~ - **gedaan** (v0.20.5): nieuwe regel bovenaan
   de zijbalk, gevuld door `renderLatestEqInfo()` na het laden. Zoekt de meest recente beving over

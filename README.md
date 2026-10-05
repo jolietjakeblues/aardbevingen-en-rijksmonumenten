@@ -43,6 +43,8 @@ kaart).
 - NLOG mijnbouwlagen: toont olie-, gas-, geothermie- en opslagvelden plus mijnbouwlocaties,
   met operatorfilter voor alle operators of alleen NAM. Velden staan standaard aan;
   mijnbouwlocaties zijn optioneel.
+- Opnieuw beginnen: een knop op de kaart wist selectie en zoekresultaten en zoomt terug naar
+  heel Nederland, terwijl de aardbevingen en je lagen- en straalinstellingen blijven staan.
 - Achtergrondkaarten: OpenStreetMap (in gedempte kleuren) is de standaard voor dekking buiten
   Nederland; schakel ook naar PDOK BRT Pastel of de actuele RGB-luchtfoto van PDOK / Beeldmateriaal.
 - Toegankelijkheid: verborgen labels, `aria-live`-statusmeldingen, toetsenbordbedienbare legenda.

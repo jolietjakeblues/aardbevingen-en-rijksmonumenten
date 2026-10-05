@@ -14,6 +14,10 @@ en technische details per onderwerp: zie `documentation/`.
 - De OSM-laag krijgt een gedempt CSS-filter (lagere verzadiging/contrast) om de standaard
   drukke POI-iconen en felle kleuren wat rustiger te maken, zonder een alternatieve tile-bron
   (en dus een nieuwe API-key-afhankelijkheid) te introduceren.
+- Reset-icoon (cirkelpijl, tooltip "Opnieuw beginnen") op de kaart onder de zoomknoppen: wist epicentrum, straalcirkel,
+  monumenten, zoekresultaten (plaats, rijksmonumentnummer, "Wat ligt hier?") en zoomt terug naar
+  heel Nederland. Aardbevingen, tijdslider, straal, achtergrondkaart en NLOG/BRO-lagen blijven
+  staan; een nog lopende monumenten-query wordt geannuleerd.
 - Permalinks ondersteunen `base=brt`, `base=osm` en `base=air`. Oudere `base=map`-links en links
   zonder `base`-parameter vallen terug op OpenStreetMap.
 
